@@ -1,0 +1,23 @@
+appId: com.anonymous.reactnativeuitest
+---
+- launchApp
+- assertVisible: "Test WebView"
+
+# Test Flip WebView
+- tapOn: "Open Flip"
+# Wait for the WebView to load a common element on Flip.id
+
+
+# Tap the Hamburger menu inside the WebView
+# Maestro automatically reads 'aria-label' and 'alt' attributes from WebViews
+# as accessibility IDs. So we can target the "Toggle navigation" aria-label directly:
+- tapOn: Toggle Navigation
+
+
+# Sometimes tapping the exact text is safer if aria-label is missing, or we just try tapping the menu item
+- tapOn: "Flip Globe"
+
+
+# Close the WebView
+- tapOn: "Close WebView"
+- assertVisible: "Test WebView"

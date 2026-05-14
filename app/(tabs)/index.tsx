@@ -7,6 +7,7 @@ import TextHelloWorld from '@/components/TextHelloWorld';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { EmailInput } from '@/components/EmailInput';
+import { FlipWebView } from '@/components/FlipWebView';
 import { Link } from 'expo-router';
 import { useState } from 'react';
 
@@ -29,6 +30,10 @@ export default function HomeScreen() {
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Test Email Input</ThemedText>
         <EmailInput value={email} onChangeText={setEmail} />
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Test WebView</ThemedText>
+        <FlipWebView />
       </ThemedView>
       <TextHelloWorld stepContainer={styles.stepContainer} />
       <ThemedView style={styles.stepContainer}>

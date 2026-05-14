@@ -21,3 +21,4 @@ appId: com.anonymous.reactnativeuitest
 - hideKeyboard
 - assertNotVisible:
     id: "email-error"
+
