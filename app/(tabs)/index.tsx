@@ -6,9 +6,13 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 import TextHelloWorld from '@/components/TextHelloWorld';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { EmailInput } from '@/components/EmailInput';
 import { Link } from 'expo-router';
+import { useState } from 'react';
 
 export default function HomeScreen() {
+  const [email, setEmail] = useState('');
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -21,6 +25,10 @@ export default function HomeScreen() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Test Email Input</ThemedText>
+        <EmailInput value={email} onChangeText={setEmail} />
       </ThemedView>
       <TextHelloWorld stepContainer={styles.stepContainer} />
       <ThemedView style={styles.stepContainer}>

@@ -1,0 +1,23 @@
+appId: com.anonymous.reactnativeuitest
+---
+- launchApp
+- assertVisible: "Welcome!"
+- assertVisible: "Enter your email"
+
+# Test invalid email
+- tapOn:
+    id: "email-input"
+- inputText: "invalid_email"
+- hideKeyboard
+- assertVisible:
+    id: "email-error"
+- assertVisible: "Invalid email format"
+
+# Test valid email
+- tapOn:
+    id: "email-input"
+- eraseText: 15
+- inputText: "test@example.com"
+- hideKeyboard
+- assertNotVisible:
+    id: "email-error"
