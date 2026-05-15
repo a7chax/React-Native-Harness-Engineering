@@ -139,6 +139,32 @@ components/__tests__/__snapshots__/EmailInput-test.tsx.snap
 
 ## Device Recording & E2E Testing
 
+### Why ADB Screen Recording Instead of Maestro Record?
+
+**Maestro `record` mode** is designed for **creating** test flows interactively (Maestro Studio).  
+**ADB `screenrecord`** is for **capturing** device output independently.
+
+**Key Advantages of ADB Recording:**
+
+| Feature | ADB screenrecord | Maestro record |
+|---------|------------------|-----------------|
+| **Purpose** | Device video capture | Flow creation tool |
+| **Independence** | Works on any app | Maestro-specific |
+| **CI/CD Integration** | ✅ Perfect for automation | ❌ Interactive only |
+| **Parallel Usage** | ✅ Run while Maestro executes | ❌ Blocks Maestro |
+| **File Control** | ✅ Full device recording | ❌ Only generated flows |
+| **Storage Flexibility** | ✅ Save anywhere (local/remote) | ❌ Maestro-managed storage |
+| **Debugging** | ✅ See actual device behavior | ⚠️ Only recorded actions |
+
+**Decision Rationale:**
+- 🎯 **Orchestration**: Start ADB recording → run Maestro → stop recording (parallel execution)
+- 📹 **Full Capture**: Records everything the user sees (including error states, animations)
+- 🔄 **Reusability**: Same video file supports multiple analysis tools
+- 🤖 **Automation**: Works in CI/CD pipelines without interactive steps
+- 📊 **Traceability**: Device output tied directly to test execution timestamp
+
+---
+
 ### ADB Screen Recording
 
 **Automatic during test execution**, or manual:
@@ -146,7 +172,7 @@ components/__tests__/__snapshots__/EmailInput-test.tsx.snap
 ```bash
 adb shell screenrecord /sdcard/test-recording.mp4 &
 # ... run tests ...
-adb shell pkill -INT screenrecord
+kill $!
 adb pull /sdcard/test-recording.mp4 ./test-recording.mp4
 ```
 
@@ -163,7 +189,7 @@ Automated user flow testing on real device/emulator.
 **Flow file:**
 ```yaml
 # .maestro/sample_test.yaml
-appId: com.anonymous.reactnativeuitest
+appId: com.example.app
 ---
 - launchApp
 - assertVisible:
@@ -172,7 +198,7 @@ appId: com.anonymous.reactnativeuitest
     id: email-input
 - tap:
     id: email-input
-- inputText: invalid_email
+- inputText: test@example.com
 - hideKeyboard
 - assertVisible:
     id: email-error
@@ -203,28 +229,26 @@ echo "✅ Recording saved: $LOCAL"
 
 ---
 
-## Linear Integration
+## Issue Tracking Integration
 
 ### Automatic Issue Creation/Update
 
-When tests complete, a Linear issue is created with:
+When tests complete, an issue can be created with:
 - **Test results**: Pass/fail summary
 - **Test specifications**: Each test case documented
 - **Device info**: Emulator/device details
 - **Video attachment**: Actual MP4 file uploaded (not link)
 
-### Issue Example
+### Issue Template
 
-**Issue**: ARU-8 - EmailInput Component - Comprehensive Testing Complete
-
-**Description includes:**
+**Example structure:**
 ```markdown
 ## 🎥 E2E Test Recording Attached
 **Video File**: E2E Test Recording - sample_test (1.58 MB)
 * **Device**: Android emulator 127.0.0.1:6555
 * **Maestro Flow**: sample_test.yaml
 * **Recorded**: 2026-05-16 00:35:45
-* **Status**: ✅ Video successfully uploaded and attached to this issue
+* **Status**: ✅ Video successfully recorded and captured
 
 ## Test Coverage
 - ✅ Unit tests: 6 passed
@@ -234,13 +258,13 @@ When tests complete, a Linear issue is created with:
 - ✅ Recording: Device screen captured
 ```
 
-### Attachment Format
+### Attachment Integration
 
-Video files are uploaded directly to Linear as attachments:
+Video files can be uploaded directly to issue tracking systems (e.g., Linear, GitHub, Jira):
 - **Format**: MP4 (binary upload, not base64)
-- **Location**: Linear issue attachments
 - **Size**: Full device recording
-- **Access**: Click attachment in Linear to download/view
+- **Storage**: Issue attachments section
+- **Access**: Download/view from issue
 
 ---
 
@@ -257,7 +281,7 @@ npm test
 1. **Run Jest unit tests**
    ```
    npx jest --watchAll=false
-   Results: 6 passed, 6 total
+   Results: All unit tests passed
    ```
 
 2. **Run UI tests** (same Jest execution)
@@ -267,7 +291,7 @@ npm test
 
 3. **Verify snapshots** (included in Jest)
    ```
-   Results: 1 snapshot passed
+   Results: All snapshots validated
    ```
 
 4. **Check device connection**
@@ -277,37 +301,39 @@ npm test
 
 5. **Start ADB screen recording**
    ```
-   adb shell screenrecord /sdcard/maestro-TIMESTAMP.mp4
+   adb shell screenrecord /sdcard/test-TIMESTAMP.mp4
+   Captures complete device output
    ```
 
 6. **Run Maestro flows**
    ```
    maestro test .maestro/sample_test.yaml
-   Tests user interactions on device screen
+   Executes automated user interactions
    ```
 
 7. **Stop recording & pull video**
    ```
-   Recording saved to .maestro/recordings/TIMESTAMP-sample_test.mp4
+   Recording saved to .maestro/recordings/TIMESTAMP-flow-name.mp4
    ```
 
-8. **Create/Update Linear issue**
+8. **Create/Update issue** (optional - if issue tracking configured)
    ```
-   Issue: ARU-8 (or new issue if not exists)
+   Document test results and specifications
    Status: Done
    Priority: High
    ```
 
-9. **Upload video to Linear**
+9. **Upload video to issue** (optional - if issue tracking configured)
    ```
-   Method: Direct binary PUT to signed URL
-   Finalize: Create attachment link in issue
+   Method: Direct binary upload (not base64)
+   Storage: Issue attachment section
+   Metadata: Timestamp, device info, test status
    ```
 
-10. **Update issue description**
+10. **Update issue description** (optional)
     ```
-    Add video info at TOP of description
-    Include metadata, timestamps, device info
+    Add video info at top of description
+    Include clear metadata and timestamps
     ```
 
 **Total Time**: ~2-3 minutes (including recording time)
@@ -358,19 +384,6 @@ npx jest components/__tests__/EmailInput-test.tsx --watchAll=false
 npx jest --updateSnapshot
 ```
 
-### Run with Coverage Report
-
-```bash
-npx jest --coverage --watchAll=false
-```
-
-### Record Maestro Flow Manually
-
-```bash
-maestro record --local
-# Opens Maestro Studio for interactive recording
-```
-
 ### View Device Recording
 
 ```bash
@@ -382,9 +395,9 @@ open .maestro/recordings/TIMESTAMP-flow-name.mp4  # macOS
 vlc .maestro/recordings/TIMESTAMP-flow-name.mp4   # Linux/VLC
 ```
 
-### Check Linear Issues
+### Check Issue Tracking (if configured)
 
-- Visit: https://linear.app/arungi-cahaya/issues
+- Visit your issue tracking system dashboard
 - Filter: Status = Done, Label = test-results
 - View: Video attachments in issue descriptions
 
@@ -431,7 +444,7 @@ emulator -avd <avd_name>
 
 ```bash
 # Verify app is installed
-adb shell pm list packages | grep reactnativeuitest
+adb shell pm list packages | grep <your-app-package>
 
 # Check device logs
 adb logcat | grep maestro
@@ -448,14 +461,18 @@ adb shell screenrecord --time-limit=30 /sdcard/test.mp4
 adb pull /sdcard/test.mp4 ./test.mp4
 ```
 
-### Issue: Linear attachment fails
+### Issue: Recording or attachment fails
 
 ```bash
 # Check file size
 ls -lh .maestro/recordings/
 
-# Ensure device is connected during upload
+# Ensure device is connected
 adb devices
+
+# Verify screenrecord is working
+adb shell screenrecord --time-limit=10 /sdcard/test.mp4
+adb pull /sdcard/test.mp4 ./test.mp4
 ```
 
 ---
@@ -466,7 +483,7 @@ adb devices
 - [React Native Testing Library](https://callstack.github.io/react-native-testing-library/)
 - [Maestro E2E Framework](https://maestro.mobile.dev/)
 - [Expo Documentation](https://docs.expo.dev/)
-- [Linear API Docs](https://linear.app/api-reference)
+- [ADB Documentation](https://developer.android.com/tools/adb)
 
 ---
 
@@ -478,10 +495,10 @@ When adding new features or components:
 2. **Implement minimal code** (Green)
 3. **Refactor while tests pass** (Refactor)
 4. **Run full test harness** (`npm test`)
-5. **Verify Linear issue** created with video
+5. **Verify test results** with device recording
 
 ---
 
 **Last Updated**: 2026-05-16
 **Test Harness Version**: 1.0
-**Framework**: React Native + Expo + Jest + Maestro + Linear
+**Framework**: React Native + Expo + Jest + Maestro + ADB Screen Recording

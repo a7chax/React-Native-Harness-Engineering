@@ -126,11 +126,7 @@ echo "Recording saved to $LOCAL"
    - Mention the saved path in the completion summary.
    - If recording failed or pull is empty, report the adb error; do not claim the run was recorded.
 
-5. **Optional: Maestro Studio recording**
-   - Only if the user explicitly wants it: `maestro record --local` (separate from adb screenrecord).
-   - Still run adb screenrecord first when executing flows on a physical device/emulator.
-
-## Linear Attachment Upload
+## Issue Tracking Upload
 
 After Maestro execution completes and recording is pulled:
 
