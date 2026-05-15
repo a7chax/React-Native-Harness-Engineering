@@ -1,5 +1,8 @@
 import { Image } from 'expo-image';
-import { StyleSheet } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { ActivityIndicator, Button, Platform, StyleSheet } from 'react-native';
+import Geolocation, { type GeolocationResponse } from '@react-native-community/geolocation';
+import MapView, { Marker } from 'react-native-maps';
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
@@ -9,10 +12,96 @@ import { ThemedView } from '@/components/themed-view';
 import { EmailInput } from '@/components/EmailInput';
 import { FlipWebView } from '@/components/FlipWebView';
 import { Link } from 'expo-router';
-import { useState } from 'react';
+
+function getCurrentPosition(options: {
+  timeout?: number;
+  maximumAge?: number;
+  enableHighAccuracy?: boolean;
+}) {
+  return new Promise<GeolocationResponse>((resolve, reject) => {
+    Geolocation.getCurrentPosition(resolve, reject, options);
+  });
+}
 
 export default function HomeScreen() {
   const [email, setEmail] = useState('');
+  const [location, setLocation] = useState<GeolocationResponse | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+
+  const requestLocationPermission = useCallback(async () => {
+    if (Platform.OS === 'web') {
+      setLocationError('Location is only available on iOS and Android.');
+      return false;
+    }
+
+    if (Platform.OS === 'android') {
+      const { PermissionsAndroid } = await import('react-native');
+      const permission = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Location permission',
+          message: 'We use your location to center the map on your last known position.',
+          buttonPositive: 'Allow',
+          buttonNegative: 'Deny',
+        }
+      );
+
+      return permission === PermissionsAndroid.RESULTS.GRANTED;
+    }
+
+    return await new Promise<boolean>((resolve) => {
+      Geolocation.requestAuthorization(
+        () => resolve(true),
+        () => resolve(false)
+      );
+    });
+  }, []);
+
+  const loadLastKnownLocation = useCallback(async () => {
+    setIsLoadingLocation(true);
+    setLocationError(null);
+
+    const granted = await requestLocationPermission();
+    if (!granted) {
+      setLocationError('Location permission was denied.');
+      setIsLoadingLocation(false);
+      return;
+    }
+
+    try {
+      const lastKnownPosition = await getCurrentPosition({
+        maximumAge: Infinity,
+        timeout: 1500,
+        enableHighAccuracy: false,
+      });
+
+      setLocation(lastKnownPosition);
+    } catch (error) {
+      const geolocationError = error as { message?: string };
+      setLocationError(geolocationError.message ?? 'Unable to get the last known location.');
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  }, [requestLocationPermission]);
+
+  const mapRegion = useMemo(() => {
+    if (!location) {
+      return {
+        latitude: 37.78825,
+        longitude: -122.4324,
+        latitudeDelta: 0.06,
+        longitudeDelta: 0.03,
+      };
+    }
+
+    return {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    };
+  }, [location]);
 
   return (
     <ParallaxScrollView
@@ -65,6 +154,36 @@ export default function HomeScreen() {
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Last Known Location</ThemedText>
+        <Button
+          title={isLoadingLocation ? 'Loading location...' : 'Load last known location'}
+          onPress={loadLastKnownLocation}
+          disabled={isLoadingLocation}
+        />
+        {isLoadingLocation && <ActivityIndicator />}
+        {locationError ? <ThemedText>{locationError}</ThemedText> : null}
+        {Platform.OS !== 'web' ? (
+          <MapView style={styles.map} region={mapRegion}>
+            {location ? (
+              <Marker
+                coordinate={{
+                  latitude: location.coords.latitude,
+                  longitude: location.coords.longitude,
+                }}
+                title="Last known location"
+              />
+            ) : null}
+          </MapView>
+        ) : (
+          <ThemedText>Map preview is not available on web for react-native-maps.</ThemedText>
+        )}
+        {location ? (
+          <ThemedText>
+            {`Lat: ${location.coords.latitude.toFixed(6)}, Lng: ${location.coords.longitude.toFixed(6)}`}
+          </ThemedText>
+        ) : null}
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
         <ThemedText>
           {`When you're ready, run `}
@@ -87,6 +206,11 @@ const styles = StyleSheet.create({
   stepContainer: {
     gap: 8,
     marginBottom: 8,
+  },
+  map: {
+    height: 200,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   reactLogo: {
     height: 178,

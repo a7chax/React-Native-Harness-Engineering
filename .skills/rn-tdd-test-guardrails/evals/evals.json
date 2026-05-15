@@ -1,0 +1,24 @@
+{
+  "skill_name": "rn-tdd-test-guardrails",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add password strength meter to signup form. Follow TDD and include tests.",
+      "expected_output": "Creates failing tests first, implements minimal feature, adds unit+UI coverage, and updates snapshots intentionally.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Fix bug where tapping Save twice submits duplicate requests in profile screen.",
+      "expected_output": "Starts with failing regression tests, applies minimal fix, validates with unit/UI tests, and handles snapshot updates if changed.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Refactor theme toggle component and ensure tests are complete.",
+      "expected_output": "Uses Red-Green-Refactor flow, keeps behavior stable with unit/UI tests, updates snapshots only when intentional, asks before Maestro, starts adb screenrecord first, and saves the pull under .maestro/recordings/.",
+      "files": []
+    }
+  ]
+}
+

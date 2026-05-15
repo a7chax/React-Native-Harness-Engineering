@@ -19,5 +19,5 @@ appId: com.anonymous.reactnativeuitest
 
 
 # Close the WebView
-- tapOn: "Close WebView"
+- tapOn: "CLOSE WEBVIEW"
 - assertVisible: "Test WebView"

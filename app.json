@@ -10,10 +10,17 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.reactnativeuitest"
+      "bundleIdentifier": "com.anonymous.reactnativeuitest",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We use your location to show your last known position on the map."
+      }
     },
     "android": {
       "package": "com.anonymous.reactnativeuitest",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

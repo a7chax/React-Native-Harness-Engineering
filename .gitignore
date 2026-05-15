@@ -38,6 +38,9 @@ yarn-error.*
 
 app-example
 
+# Maestro device screen recordings
+.maestro/recordings/*.mp4
+
 # generated native folders
 /ios
 /android
