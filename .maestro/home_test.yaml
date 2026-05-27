@@ -1,0 +1,21 @@
+appId: com.anonymous.reactnativeuitest
+---
+- launchApp
+- assertVisible: "Welcome back"
+- tapOn:
+    id: "login-email-input"
+- inputText: "john@example.com"
+- hideKeyboard
+- tapOn:
+    id: "login-password-input"
+- inputText: "secret123"
+- hideKeyboard
+- tapOn:
+    id: "login-submit-button"
+- assertVisible:
+    id: "home-screen"
+- assertVisible:
+    id: "home-welcome"
+- tapOn:
+    id: "logout-button"
+- assertVisible: "Welcome back"

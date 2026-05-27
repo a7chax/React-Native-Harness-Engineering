@@ -1,0 +1,26 @@
+appId: com.anonymous.reactnativeuitest
+---
+- launchApp
+- assertVisible: "Welcome back"
+- assertVisible:
+    id: "login-screen"
+
+# --- Invalid: empty submit surfaces both errors ---
+- tapOn:
+    id: "login-submit-button"
+- assertVisible: "Enter a valid email address"
+- assertVisible: "Password is required"
+
+# --- Valid login navigates to Home ---
+- tapOn:
+    id: "login-email-input"
+- inputText: "john@example.com"
+- hideKeyboard
+- tapOn:
+    id: "login-password-input"
+- inputText: "secret123"
+- hideKeyboard
+- tapOn:
+    id: "login-submit-button"
+- assertVisible:
+    id: "home-screen"

@@ -44,3 +44,6 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Claude Code local files (machine-specific settings, locks)
+.claude/

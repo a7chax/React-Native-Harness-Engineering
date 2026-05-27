@@ -6,8 +6,9 @@ description: >
   Use this skill whenever the user asks to implement or fix app behavior, components,
   hooks, navigation flows, or test coverage in React Native/Expo projects.
   When user says "test", automatically runs all unit tests, UI tests, snapshot tests,
-  starts ADB screen recording, executes Maestro flows, and stops recording upon completion.
-tags: [react-native, expo, tdd, unit-test, ui-test, snapshot, maestro, adb, auto-test]
+  starts ADB screen recording, executes Maestro flows, stops recording upon completion,
+  then extracts frames from the recording and reads them to verify on-screen behavior.
+tags: [react-native, expo, tdd, unit-test, ui-test, snapshot, maestro, adb, ffmpeg, frame-analysis, auto-test]
 ---
 
 # React Native TDD + Test Completion Skill
@@ -68,9 +69,10 @@ When the user asks to "test" or run tests, execute ALL test surfaces in this ord
 4. **Start ADB recording**: Initialize `adb screenrecord` on the connected device
 5. **Run Maestro flows**: Execute all `.maestro/*.yaml` flows
 6. **Stop ADB recording**: Automatically terminate recording and pull video when Maestro completes
-7. **Create/Update Linear issue**: Document test results and specifications
-8. **Upload recording to Linear**: Attach video file directly to the Linear issue (not links)
-9. **Update issue description**: Add video attachment info at the top of description for visibility
+7. **Extract & inspect frames**: Split the pulled video into stills with `ffmpeg` (every 1s, or every 3s for long flows) and read them to verify on-screen behavior
+8. **Create/Update Linear issue**: Document test results and specifications
+9. **Upload recording to Linear**: Attach video file directly to the Linear issue (not links)
+10. **Update issue description**: Add video attachment info at the top of description for visibility
 
 This is the **default behavior** when the user says "test". No additional prompt is required.
 
@@ -83,9 +85,10 @@ When all unit/UI/snapshot tests pass, automatically proceed to Maestro with devi
 2. If tests pass, auto-start ADB recording
 3. Run Maestro flows
 4. Auto-stop recording and pull video to `.maestro/recordings/`
-5. Create or update Linear issue with test results
-6. Upload video recording directly as Linear attachment
-7. Update Linear issue description with video attachment details prominently displayed at the top
+5. Extract frames from the recording and read them to verify on-screen behavior
+6. Create or update Linear issue with test results
+7. Upload video recording directly as Linear attachment
+8. Update Linear issue description with video attachment details prominently displayed at the top
 
 ### Before Maestro: `adb screenrecord` (required)
 
@@ -125,6 +128,42 @@ echo "Recording saved to $LOCAL"
    - Confirm `$LOCAL` exists and is non-empty.
    - Mention the saved path in the completion summary.
    - If recording failed or pull is empty, report the adb error; do not claim the run was recorded.
+
+## Recording Inspection (extract frames and read them)
+
+You cannot watch an `.mp4` directly — you read **images**. After the recording is pulled, split it into still frames and read them to verify what actually happened on screen (errors shown, success states, navigation, no redbox/ANR). This is a **required verification step**, not optional. Maestro reporting all steps `COMPLETED` is not sufficient on its own — confirm the pixels.
+
+> ⚠️ Do **not** capture frames with a live `adb screencap` loop running in parallel with `screenrecord` + Maestro. On weak emulators the combined load makes the app ANR ("isn't responding") mid-flow. Always record with `screenrecord` only, then extract frames from the saved video afterward.
+
+### Extract frames with `ffmpeg`
+
+```bash
+LOCAL=".maestro/recordings/20260527-200804-register_form_test.mp4"
+FRAMES="/tmp/maestro-frames/$(basename "$LOCAL" .mp4)"
+mkdir -p "$FRAMES"
+
+# Default: 1 frame per second (fine-grained; good for short flows)
+ffmpeg -loglevel error -y -i "$LOCAL" -vf fps=1 "$FRAMES/frame_%03d.png"
+
+# Lighter sweep: 1 frame every 3 seconds (long flows)
+# ffmpeg -loglevel error -y -i "$LOCAL" -vf fps=1/3 "$FRAMES/frame_%03d.png"
+```
+
+- Use **`fps=1`** for short flows (≲ 60s) so no action is missed; use **`fps=1/3`** (every 3s) for longer flows to keep the frame count manageable.
+- `frame_NNN.png` ≈ second `NNN` of the run, so correlate frames to Maestro log steps by timestamp.
+- `ffmpeg` may not appear on a restricted `which` PATH but is still runnable at `/usr/bin/ffmpeg`.
+
+### Read the frames
+
+- Read a spread across the run **plus the frames at each action boundary** (right after each `inputText`, `tapOn`, assertion, navigation). The Maestro log's `COMPLETED` steps tell you roughly when each action happened, so pick the "perfect" moment to look rather than reading every frame.
+- For each key frame confirm the expected UI: validation errors with their exact text, success/empty states, the correct screen, and **no redbox or ANR dialog**.
+- If a frame shows an ANR ("isn't responding") or a redbox, the run is **not** trustworthy even if Maestro reported success — fix reliability (below), re-run, and re-inspect.
+- Summarize findings by referencing specific frames (e.g. "frame 043 shows all four validation errors").
+
+### Reliability (so the run is clean enough to inspect)
+
+- **Pre-warm** the app before `maestro test` (`am force-stop` + launcher intent + ~10–12s wait) so Maestro's `launchApp` cold-start doesn't ANR while Metro rebuilds the JS bundle.
+- `tapOn` does **not** auto-scroll. On scrollable screens use `scrollUntilVisible` before each field tap and assertion; assert a field's inline error right after typing while it is on screen.
 
 ## Issue Tracking Upload
 

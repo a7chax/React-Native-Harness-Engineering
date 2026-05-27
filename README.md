@@ -1,349 +1,321 @@
 # React Native Harness Engineering
 
-A comprehensive harness engineering infrastructure for React Native/Expo applications combining Jest, ADB screen recording, and Maestro E2E in an automated orchestration pipeline.
+A harness-engineering setup for React Native / Expo apps that combines **Jest** (unit/UI/snapshot), **Maestro** (E2E on a real device), and **ADB screen recording** — with a critical extra step: after every recorded run the video is split into still frames with **ffmpeg** and the frames are **read** to confirm what actually happened on screen. Maestro reporting "all steps passed" is not trusted on its own; the pixels are verified.
+
+The app under test is a small, clean **auth flow** (mock/local auth, no backend) used to exercise the harness end-to-end.
 
 ## Quick Start
 
 ### Prerequisites
 
 - Node.js 18+
-- Android SDK/Emulator or physical device
-- Maestro CLI
+- Android emulator or physical device (`adb devices` shows one `device`)
+- [Maestro CLI](https://maestro.mobile.dev/) (`maestro --version`)
+- `ffmpeg` (for extracting frames from recordings)
+- Expo dev build installed on the device + Metro running (`npx expo start`)
 
 ### Setup
 
 ```bash
 npm install
-emulator -avd Nexus_5X_API_30 &
-adb devices
+adb devices            # confirm a device/emulator is attached
+npx expo start         # Metro bundler (the dev build loads JS from here)
 ```
 
-### Running the Harness
+### Running the harness
 
 ```bash
-# Full harness (unit + UI + snapshots + device recording + E2E)
-npm test
-
-# Jest only
+# Jest: unit + UI + snapshots
 npx jest --watchAll=false
 
-# Jest with coverage
-npx jest --coverage --watchAll=false
+# Type check
+npx tsc --noEmit
 
-# Maestro flows only
-maestro test .maestro/sample_test.yaml
+# A single Maestro E2E flow
+maestro test .maestro/login_test.yaml
+
+# Full per-screen device run (record + extract frames) — see the script below
 ```
 
 ---
 
-## Harness Architecture
+## App under test (auth flow)
 
-The harness engineering system orchestrates multiple test layers in parallel:
+A tab-less Expo Router stack (`app/_layout.tsx`):
 
-```
-Jest Layer (Unit/UI/Snapshots)
-     ↓
-ADB Recording ══════════════════ Maestro E2E
-     ↓                               ↓
-Device Screen Capture         Flow Automation
-     ↓                               ↓
-     └────────────┬──────────────────┘
-                  ↓
-          Result Aggregation
-```
+| Route | File | Purpose |
+|-------|------|---------|
+| `/` | `app/index.tsx` | **Login** — email/password validation, links to Register/Forgot, → Home |
+| `/register` | `app/register.tsx` | **Register** — name/email/password/confirm validation, → Home |
+| `/forgot-password` | `app/forgot-password.tsx` | **Forgot Password** — email validation, mock "reset link sent" |
+| `/home` | `app/home.tsx` | **Home** — post-login landing, logout → Login |
 
-### Core Components
-
-**Jest Layer**: Pure logic, component interaction, structure validation
-**ADB Recording**: Real device MP4 capture (non-blocking, ~2-5% overhead)
-**Maestro**: Automated user flow testing on real device
-**Orchestration**: Parallel execution with fail-fast gates
+Shared building blocks: `lib/authValidation.ts` (validators), `components/ui/{FormTextInput,PrimaryButton,AuthScreen}.tsx`, and `components/RegisterForm/`.
 
 ---
 
-## Why This Harness Engineering Approach?
+## Harness architecture
 
-### Orchestration Benefits
+```
+Jest Layer (Unit / UI / Snapshots)        ← fast, no device
+        ↓ (green gate)
+ADB screen recording ═══════════ Maestro E2E flow   ← real device, recorded
+        ↓                               ↓
+   video.mp4  ──►  ffmpeg frame extraction (1 fps)
+                            ↓
+                   read frames = visual verification
+                            ↓
+                  attach recording to the issue tracker
+```
 
-- **Parallel Execution**: ADB records while Maestro runs (35% time savings)
-- **Multiple Test Layers**: Catches different bug classes
-- **Real Device Testing**: Actual device output via MP4
-- **CI/CD Ready**: Fully automated, no interactive steps
+**Jest** catches logic/structure/regression bugs without a device. **Maestro** drives real user flows. **ADB** captures the screen as MP4. **ffmpeg + frame reading** turns the video into still images that can actually be inspected (an MP4 can't be "watched" by a coding agent — frames can be read).
 
-### Why ADB Screen Recording?
+### Why ADB screen recording (not Maestro's recorder)?
 
-| Feature | ADB | Maestro record | UIAutomator |
-|---------|-----|---|---|
-| Independence | ✅ Universal | ❌ Maestro-only | ❌ Inspector-only |
-| Parallel Execution | ✅ Non-blocking | ❌ Blocking | N/A |
-| Full Device Capture | ✅ Complete screen | ⚠️ Flow only | ❌ Limited |
-| Performance | ✅ 2-5% overhead | ❌ 20-30% | ❌ 30-50% |
-| CI/CD Integration | ✅ No interaction | ❌ Interactive | ❌ Interactive |
+| Feature | ADB `screenrecord` | Maestro record |
+|---------|--------------------|----------------|
+| Independence | ✅ Universal | ❌ Maestro-only |
+| Runs alongside the flow | ✅ Non-blocking | ❌ Blocking |
+| Full-screen capture | ✅ Whole device | ⚠️ Flow only |
+| Overhead | ✅ Low (hardware encoder) | ❌ Higher |
+
+> ⚠️ Record with `screenrecord` **only**. Do **not** also run a live `adb screencap` loop in parallel to sample frames — on weaker emulators the combined load makes the app ANR ("isn't responding") mid-flow. Extract frames from the saved video afterward instead.
 
 ---
 
-## Test Layers
+## Test layers
 
-### Layer 1: Unit Testing
-
-Pure logic, utilities, validators, hooks.
-
+### Layer 1 — Unit (Jest)
+Pure logic: validators, helpers, transforms.
 ```typescript
-describe('EmailValidator', () => {
-  it('rejects invalid emails', () => {
-    expect(validateEmail('invalid')).toBe(false);
-  });
+import { validateEmail, EMAIL_ERROR } from '@/lib/authValidation';
+
+it('rejects malformed emails', () => {
+  expect(validateEmail('foo@bar')).toBe(EMAIL_ERROR);
+  expect(validateEmail('a@b.co')).toBeNull();
 });
 ```
 
-### Layer 2: UI Testing
-
-Component rendering and user interactions.
-
+### Layer 2 — UI (React Native Testing Library)
+Component behavior through interactions; mock navigation.
 ```typescript
-describe('EmailInput', () => {
-  it('shows error on invalid input', () => {
-    const { getByTestId } = render(<EmailInput />);
-    fireEvent.changeText(getByTestId('email-input'), 'invalid');
-    expect(getByTestId('email-error')).toBeVisible();
-  });
-});
+fireEvent.press(getByTestId('login-submit-button'));
+expect(getByText('Enter a valid email address')).toBeTruthy();
+expect(mockReplace).not.toHaveBeenCalled();
 ```
 
-### Layer 3: Snapshots
-
-Component structure regression detection.
-
+### Layer 3 — Snapshots
+Structural regression detection; update only when the change is intentional.
 ```bash
 npx jest --updateSnapshot
 ```
 
-### Layer 4: E2E Flows
-
-Complete user flows on real device.
-
+### Layer 4 — E2E (Maestro)
+Full flows on the device, keyed off stable `testID`s. Use `scrollUntilVisible` before fields/asserts (Maestro `tapOn` does not auto-scroll).
 ```yaml
-appId: com.example.app
+appId: com.anonymous.reactnativeuitest
 ---
 - launchApp
-- assertVisible: {id: email-input}
-- tap: {id: email-input}
-- inputText: test@example.com
-- assertVisible: {id: email-error}
+- assertVisible: "Welcome back"
+- tapOn: { id: "login-submit-button" }
+- assertVisible: "Enter a valid email address"
+- tapOn: { id: "login-email-input" }
+- inputText: "john@example.com"
+- hideKeyboard
+- tapOn: { id: "login-password-input" }
+- inputText: "secret123"
+- hideKeyboard
+- tapOn: { id: "login-submit-button" }
+- assertVisible: { id: "home-screen" }
 ```
 
-### Layer 5: Device Recording
-
-MP4 capture for visual verification and debugging.
+### Layer 5 — Device recording + frame inspection
+Every recorded run is split into frames and visually verified (see below).
 
 ---
 
-## Project Structure
+## Recording inspection (read the video as frames)
+
+You can't watch an `.mp4` — you read **images**. After a recorded run, split the video into stills and read them to confirm errors render, success/empty states appear, the right screen is shown, and there's **no redbox or ANR dialog**.
+
+```bash
+LOCAL=".maestro/recordings/20260527-212929-login_test.mp4"
+FRAMES="/tmp/maestro-frames/$(basename "$LOCAL" .mp4)"
+mkdir -p "$FRAMES"
+
+# 1 frame per second (good for short flows); use fps=1/3 for long flows
+ffmpeg -loglevel error -y -i "$LOCAL" -vf fps=1 "$FRAMES/frame_%03d.png"
+```
+
+`frame_NNN.png` ≈ second `NNN` of the run, so frames map to Maestro log steps by timestamp. Read a spread plus the frames at each **action boundary** (right after each `inputText` / `tapOn` / assertion) — the "perfect" moments to look — rather than every frame.
+
+### Full per-screen run (record + extract)
+
+```bash
+D=127.0.0.1:6555            # adb device id
+FLOW=".maestro/login_test.yaml"
+STAMP="$(date +%Y%m%d-%H%M%S)"; BASE="$(basename "$FLOW" .yaml)"
+LOCAL=".maestro/recordings/${STAMP}-${BASE}.mp4"; REMOTE="/sdcard/m-${STAMP}.mp4"
+FRAMES="/tmp/maestro-frames/${STAMP}-${BASE}"; mkdir -p .maestro/recordings "$FRAMES"
+
+# Pre-warm so Maestro's launchApp cold-start doesn't ANR while Metro rebuilds
+adb -s $D shell am force-stop com.anonymous.reactnativeuitest
+adb -s $D shell monkey -p com.anonymous.reactnativeuitest -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+sleep 12
+
+adb -s $D shell screenrecord --bit-rate 3000000 "$REMOTE" &   # record ONLY (no parallel screencap)
+sleep 1
+maestro test "$FLOW"; RC=$?
+adb -s $D shell pkill -INT screenrecord || true; sleep 2
+adb -s $D pull "$REMOTE" "$LOCAL"; adb -s $D shell rm -f "$REMOTE"
+ffmpeg -loglevel error -y -i "$LOCAL" -vf fps=1 "$FRAMES/frame_%03d.png"
+echo "exit=$RC video=$LOCAL frames=$(ls "$FRAMES" | wc -l)"
+```
+
+---
+
+## Error diagnosis — what to do when a flow fails
+
+A non-zero Maestro exit, **or** any frame showing an ANR/redbox, means the run is not trustworthy even if some steps reported `COMPLETED`. The procedure:
+
+1. **Find the failing step** in the Maestro log (the last `COMPLETED`, then the `FAILED` line).
+2. **Read the frames around that moment** action-by-action. Because frames are 1 fps and the log is timestamped, you can pinpoint the exact second and see what was on screen — wrong scroll position, keyboard covering a field, an ANR/redbox dialog, an unexpected screen.
+3. **Check Maestro's own debug artifacts** at `~/.maestro/tests/<timestamp>/` — it saves a screenshot on failure plus logs and the command list.
+4. **Apply the fix** based on what the frames show, then re-run and re-inspect.
+
+### Failure patterns seen in this repo (and the fixes)
+
+| Symptom in the frames | Cause | Fix |
+|-----------------------|-------|-----|
+| "isn't responding" ANR dialog mid-flow | Emulator overloaded by `screenrecord` + a parallel `screencap` sampler | Record with `screenrecord` only; extract frames from the video afterward |
+| ANR right after `launchApp` | Cold start raced with Metro's first bundle rebuild | **Pre-warm** the app (force-stop + launch + ~12s) before `maestro test` |
+| `Element not found` for a lower field | `tapOn` doesn't auto-scroll; the field was off-screen / behind the keyboard | `scrollUntilVisible` before each field tap and assertion |
+
+---
+
+## Project structure
 
 ```
 react-native-testing-sample/
-├── README.md                    ← Harness overview
-├── README_HARNESS.md            ← Engineering deep-dive
-├── package.json
-├── app/                         ← Application code
-├── components/
-│   ├── EmailInput.tsx
+├── README.md                     ← this overview
+├── README_HARNESS.md             ← engineering deep-dive
+├── app/                          ← Expo Router screens (tab-less stack)
+│   ├── _layout.tsx               ← Stack: index, register, forgot-password, home
+│   ├── index.tsx                 ← Login
+│   ├── register.tsx              ← Register
+│   ├── forgot-password.tsx       ← Forgot Password
+│   ├── home.tsx                  ← Home
+│   └── __tests__/                ← screen UI tests + snapshots
+├── lib/
+│   ├── authValidation.ts         ← shared validators
 │   └── __tests__/
-│       ├── EmailInput-test.tsx
-│       └── __snapshots__/
+├── components/
+│   ├── RegisterForm/             ← register form + validation + tests
+│   └── ui/                       ← FormTextInput, PrimaryButton, AuthScreen (+ tests)
 ├── .maestro/
-│   ├── sample_test.yaml
-│   ├── flip_webview_test.yaml
-│   └── recordings/              ← MP4 recordings
-├── .skills/
-│   └── rn-tdd-test-guardrails/
-└── node_modules/
+│   ├── login_test.yaml
+│   ├── register_form_test.yaml
+│   ├── forgot_password_test.yaml
+│   ├── home_test.yaml
+│   └── recordings/               ← MP4 recordings (git-ignored)
+└── .skills/
+    └── rn-tdd-test-guardrails/   ← the TDD + harness skill
 ```
 
 ---
 
-## Common Commands
+## Common commands
 
 ```bash
-# Full harness
-npm test
-
-# Specific test file
-npx jest components/__tests__/EmailInput-test.tsx --watchAll=false
-
-# Update snapshots
-npx jest --updateSnapshot
-
-# View recordings
-ls -lh .maestro/recordings/
-vlc .maestro/recordings/TIMESTAMP-flow.mp4
-
-# Run E2E flow
-maestro test .maestro/sample_test.yaml
+npx jest --watchAll=false                          # all jest layers
+npx jest app/__tests__/login-screen-test.tsx       # one suite
+npx jest --updateSnapshot                          # accept intentional snapshot changes
+npx tsc --noEmit                                   # type check
+maestro test .maestro/home_test.yaml               # one E2E flow
+ffmpeg -i video.mp4 -vf fps=1 frame_%03d.png       # split a recording into frames
+ls -lh .maestro/recordings/                        # list recordings
 ```
 
 ---
 
-## Execution Pipeline
+## Execution pipeline
 
 ```
 START
-  ├─► Jest Tests (1-2s)
-  │   ├─ Unit tests
-  │   ├─ UI tests
-  │   └─ Snapshots
-  │
-  ├─► Device Check (1s)
-  │   └─ Verify adb connection
-  │
-  ├─► ADB Recording + Maestro (30-35s parallel)
-  │   ├─ Start: adb shell screenrecord
-  │   ├─ Run: maestro test
-  │   └─ Stop: pull video, verify file
-  │
-  ├─► Result Aggregation (2s)
-  │   └─ Combine all outputs
-  │
-  └─► END (~40-45s total)
+  ├─► Jest (unit + UI + snapshots) + tsc            ← green gate
+  ├─► Device check (adb devices)
+  ├─► Pre-warm app (avoid cold-start ANR)
+  ├─► screenrecord  +  maestro test   (recorded run)
+  ├─► pull video → .maestro/recordings/
+  ├─► ffmpeg: extract frames (1 fps)
+  ├─► READ frames → verify on-screen behavior        ← required, not optional
+  └─► attach recording to issue tracker (Linear)
+END
 ```
 
 ---
 
 ## Troubleshooting
 
-### Device Not Connected
 ```bash
+# Device not connected
 adb devices
-emulator -avd Nexus_5X_API_30 &
-```
 
-### Jest Failures
-```bash
+# Jest failures (verbose)
 npx jest --verbose --watchAll=false
-```
 
-### Maestro Flow Issues
-```bash
-adb logcat | grep maestro
-adb shell dumpsys activity | grep current
-```
+# App ANR / sluggish first launch → pre-warm before Maestro
+adb shell am force-stop com.anonymous.reactnativeuitest
+adb shell monkey -p com.anonymous.reactnativeuitest -c android.intent.category.LAUNCHER 1
 
-### Recording Problems
-```bash
-adb shell df /sdcard
-adb shell ps | grep screenrecord
+# Maestro element not found → it doesn't auto-scroll; use scrollUntilVisible
+
+# Inspect a recording frame-by-frame
+ffmpeg -i .maestro/recordings/<file>.mp4 -vf fps=1 /tmp/frames/frame_%03d.png
+
+# Maestro's own failure screenshot + logs
+ls ~/.maestro/tests/
 ```
 
 ---
 
-## Best Practices
+## Best practices
 
-- ✅ Write tests first (TDD: Red → Green → Refactor)
-- ✅ Use `testID` for all assertions
-- ✅ Avoid testing implementation details
-- ✅ Keep tests deterministic and readable
-- ✅ Update snapshots intentionally
-- ✅ Review device recordings regularly
-
----
-
-## Deep Dive
-
-For comprehensive harness engineering documentation, see **[README_HARNESS.md](./README_HARNESS.md)**:
-- Complete architecture and design principles
-- Timing analysis and optimization
-- Advanced troubleshooting
-- Implementation patterns
-- Quality assurance framework
+- ✅ TDD: write a failing test first (Red → Green → Refactor)
+- ✅ Stable `testID`s for every E2E assertion
+- ✅ `scrollUntilVisible` before lower fields/asserts in Maestro
+- ✅ Record with `screenrecord` only; inspect via extracted frames
+- ✅ Pre-warm the app before recorded runs
+- ✅ Don't trust a green Maestro log alone — confirm the frames
+- ✅ Update snapshots only for intentional changes
 
 ---
+
+## Deep dive
+
+See **[README_HARNESS.md](./README_HARNESS.md)** for architecture, design principles, timing analysis, and the full diagnostics playbook.
 
 ## References
 
-- [Jest Documentation](https://jestjs.io/)
-- [React Native Testing Library](https://callstack.github.io/react-native-testing-library/)
-- [Maestro Framework](https://maestro.mobile.dev/)
-- [ADB Documentation](https://developer.android.com/tools/adb)
-- [Expo Documentation](https://docs.expo.dev/)
+- [Jest](https://jestjs.io/) · [React Native Testing Library](https://callstack.github.io/react-native-testing-library/) · [Maestro](https://maestro.mobile.dev/) · [ADB](https://developer.android.com/tools/adb) · [Expo](https://docs.expo.dev/) · [ffmpeg](https://ffmpeg.org/)
 
 ---
 
-**Harness Version**: 1.0  
-**Tech Stack**: React Native + Expo + Jest + Maestro + ADB Screen Recording
+**Harness Version**: 2.0 · **Stack**: React Native + Expo Router + Jest + Maestro + ADB + ffmpeg
 
 ---
 
-## Harness Engineering for Agentic AI Coding
+## Harness engineering for agentic AI coding
 
-### Why Harness Engineering Matters with AI Agents
+When an AI agent generates code, the harness is what makes its output trustworthy:
 
-When working with agentic AI systems (like Claude, GPT, or other coding agents), harness engineering becomes **critical**:
-
-1. **Agent Verification**: AI agents generate code that needs immediate validation
-   - Agents may make logical errors despite good intentions
-   - Automated test harness catches regressions instantly
-   - Fail-fast prevents cascading errors
-
-2. **Deterministic Feedback Loop**:
-   - Agents learn from structured test outputs
-   - Clear pass/fail signals guide next iterations
-   - Device recording provides visual proof of behavior
-   - Reproducible test results = better agent decisions
-
-3. **Safety & Trust**:
-   - Code generation without testing = risk
-   - Harness engineering provides confidence layer
-   - Device recording enables human review
-   - Orchestrated testing prevents broken deployments
-
-4. **Efficiency at Scale**:
-   - Agents can iterate faster with automated feedback
-   - Parallel execution (ADB + Maestro) reduces iteration time
-   - Multiple test layers catch bugs early
-   - Less rework needed with comprehensive coverage
-
-### Harness Engineering in AI-Assisted Development
+1. **Verification without human review** — jest + tsc gate every change; the device recording + frames prove real behavior.
+2. **Deterministic feedback loop** — clear pass/fail plus visual evidence guide the next iteration.
+3. **Safety through layers** — unit → UI → snapshot → E2E → recorded-and-inspected.
+4. **Trust through artifacts** — each screen's recording is attached to its tracker issue, and frames are inspected (and, on failure, read action-by-action) rather than assuming a green log is the truth.
 
 ```
-┌─────────────────────────────────────────────┐
-│        AGENT CODE GENERATION                 │
-│     (Claude, GPT, etc.)                      │
-└────────────────────┬────────────────────────┘
-                     ↓
-        ┌────────────────────────┐
-        │  HARNESS ENGINEERING   │
-        │  ┌──────────────────┐  │
-        │  │ Unit Tests       │  │
-        │  │ UI Tests         │  │
-        │  │ Snapshots        │  │
-        │  │ Device Recording │  │
-        │  │ E2E Flows        │  │
-        │  └──────────────────┘  │
-        └────────────┬───────────┘
-                     ↓
-        ┌────────────────────────┐
-        │  VERIFICATION RESULT   │
-        │  ✅ PASS / ❌ FAIL     │
-        └────────────┬───────────┘
-                     ↓
-        ┌────────────────────────┐
-        │  AGENT FEEDBACK LOOP   │
-        │  (Next iteration)      │
-        └────────────────────────┘
+AGENT CODE  →  HARNESS (jest · tsc · maestro · record · ffmpeg frames)  →  PASS/FAIL + frames  →  next iteration
 ```
 
-**Key Benefits**:
-- **Immediate feedback**: Agents know if code works within seconds
-- **Confidence**: Device recording proves behavior (not just assert)
-- **Automation**: No human intervention needed for test execution
-- **Iteration**: Agents refine code based on harness results
-- **Documentation**: Test results are automatically tracked
-
-### Reference
-
-See OpenAI's harness engineering concepts:
-- **Blog**: [Harness Engineering for AI](https://openai.com/index/harness-engineering/)
-- **Key Concept**: Testing infrastructure is as important as code infrastructure
-- **AI Context**: Agentic systems need robust harnesses for safe, trustworthy operation
-
----
+Reference: OpenAI — [Harness Engineering for AI](https://openai.com/index/harness-engineering/).
