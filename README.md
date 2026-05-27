@@ -134,6 +134,31 @@ Every recorded run is split into frames and visually verified (see below).
 
 ---
 
+## Test results & coverage
+
+`npx jest --coverage --watchAll=false` → **9 suites, 48 tests passing**, 4 snapshots. Overall coverage **99.09% statements · 93.42% branch · 100% functions · 99.04% lines**.
+
+| Layer | File | % Stmts | % Branch | % Funcs | % Lines |
+|-------|------|--------:|---------:|--------:|--------:|
+| **All files** | — | **99.09** | **93.42** | **100** | **99.04** |
+| Unit (logic) | `lib/authValidation.ts` | 100 | 100 | 100 | 100 |
+| Unit (logic) | `components/RegisterForm/validation.ts` | 100 | 100 | 100 | 100 |
+| UI (screen) | `app/index.tsx` — Login | 100 | 100 | 100 | 100 |
+| UI (screen) | `app/register.tsx` | 100 | 100 | 100 | 100 |
+| UI (screen) | `app/forgot-password.tsx` | 100 | 100 | 100 | 100 |
+| UI (screen) | `app/home.tsx` | 100 | 100 | 100 | 100 |
+| UI (component) | `components/RegisterForm/index.tsx` | 100 | 100 | 100 | 100 |
+| UI (component) | `components/ui/FormTextInput.tsx` | 100 | 100 | 100 | 100 |
+| UI (component) | `components/ui/PrimaryButton.tsx` | 100 | 100 | 100 | 100 |
+| UI (component) | `components/ui/AuthScreen.tsx` | 100 | 50 | 100 | 100 |
+| Shared | `components/themed-text.tsx` | 100 | 90.9 | 100 | 100 |
+
+**Unit coverage** (pure logic — validators) is **100%** across the board. **UI coverage** (screens + components) is **100% of statements/functions/lines**; the only sub-100% branch is `AuthScreen`'s optional `subtitle`/theme branch. Regenerate anytime with `npx jest --coverage` (HTML report at `coverage/lcov-report/index.html`).
+
+> Navigation/theme scaffolding (`app/_layout.tsx`, `hooks/use-color-scheme.ts`) has no dedicated tests and is intentionally excluded from the goals above.
+
+---
+
 ## Recording inspection (read the video as frames)
 
 You can't watch an `.mp4` — you read **images**. After a recorded run, split the video into stills and read them to confirm errors render, success/empty states appear, the right screen is shown, and there's **no redbox or ANR dialog**.
@@ -198,7 +223,7 @@ A non-zero Maestro exit, **or** any frame showing an ANR/redbox, means the run i
 ```
 react-native-testing-sample/
 ├── README.md                     ← this overview
-├── README_HARNESS.md             ← engineering deep-dive
+├── HARNESS_GUIDE.md              ← engineering deep-dive
 ├── app/                          ← Expo Router screens (tab-less stack)
 │   ├── _layout.tsx               ← Stack: index, register, forgot-password, home
 │   ├── index.tsx                 ← Login
@@ -293,7 +318,7 @@ ls ~/.maestro/tests/
 
 ## Deep dive
 
-See **[README_HARNESS.md](./README_HARNESS.md)** for architecture, design principles, timing analysis, and the full diagnostics playbook.
+See **[HARNESS_GUIDE.md](./HARNESS_GUIDE.md)** for architecture, design principles, timing analysis, and the full diagnostics playbook.
 
 ## References
 
