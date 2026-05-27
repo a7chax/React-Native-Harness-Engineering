@@ -1,8 +1,10 @@
 --- 
-name: rn-tdd-test-guardrails
+name: harness-engineering
 description: >
-  Enforces React Native feature delivery with TDD: write failing tests first,
-  implement minimal code, and complete unit tests, UI tests, and snapshot updates.
+  Full React Native testing-harness workflow — not just TDD guardrails. Write failing
+  tests first and complete unit, UI, and snapshot coverage; then run the device harness:
+  ADB screen recording + Maestro E2E, extract frames with ffmpeg and read them to verify
+  on-screen behavior, and attach the recording to the issue tracker.
   Use this skill whenever the user asks to implement or fix app behavior, components,
   hooks, navigation flows, or test coverage in React Native/Expo projects.
   When user says "test", automatically runs all unit tests, UI tests, snapshot tests,
@@ -11,7 +13,7 @@ description: >
 tags: [react-native, expo, tdd, unit-test, ui-test, snapshot, maestro, adb, ffmpeg, frame-analysis, auto-test]
 ---
 
-# React Native TDD + Test Completion Skill
+# React Native Harness Engineering Skill
 
 Use this workflow for feature work and bug fixes in React Native/Expo codebases.
 

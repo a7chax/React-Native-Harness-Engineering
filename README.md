@@ -244,7 +244,7 @@ react-native-testing-sample/
 │   ├── home_test.yaml
 │   └── recordings/               ← MP4 recordings (git-ignored)
 └── .skills/
-    └── rn-tdd-test-guardrails/   ← the TDD + harness skill
+    └── harness-engineering/      ← TDD + recording + frame-inspection harness skill
 ```
 
 ---
