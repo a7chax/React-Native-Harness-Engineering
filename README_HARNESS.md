@@ -1007,6 +1007,55 @@ Without harness: Would require human testing (30+ minutes)
 
 ---
 
+## Recording Inspection & Failure Diagnosis
+
+A green Maestro log is **not** sufficient evidence. The recording is the source of truth, and the recording is verified by reading **frames** — an `.mp4` cannot be "watched" by a coding agent, but extracted PNG frames can be read.
+
+### Extract frames with ffmpeg
+
+```bash
+LOCAL=".maestro/recordings/<timestamp>-<flow>.mp4"
+FRAMES="/tmp/maestro-frames/$(basename "$LOCAL" .mp4)"
+mkdir -p "$FRAMES"
+
+# 1 frame/second — fine-grained, good for short flows (<~60s)
+ffmpeg -loglevel error -y -i "$LOCAL" -vf fps=1 "$FRAMES/frame_%03d.png"
+
+# 1 frame every 3 seconds — lighter sweep for long flows
+# ffmpeg -loglevel error -y -i "$LOCAL" -vf fps=1/3 "$FRAMES/frame_%03d.png"
+```
+
+`frame_NNN.png` corresponds to roughly second `NNN` of the run, so frames line up with the timestamped Maestro log. Read a spread across the run **plus the frame at each action boundary** (right after each `inputText`, `tapOn`, assertion, navigation) — the meaningful moments — instead of every frame. Confirm: validation errors with exact text, success/empty states, the correct screen, and **no redbox or ANR dialog**.
+
+> ⚠️ Capture the video with `adb screenrecord` only. Do **not** run a parallel `adb screencap` sampling loop during the flow — on weaker emulators the combined load (record + per-second capture + Maestro polling) makes the app ANR mid-run. Always derive frames from the saved recording afterward.
+
+### When a flow fails
+
+1. **Locate the failing step** — the last `COMPLETED` line, then the `FAILED` line in the Maestro output.
+2. **Read frames action-by-action** around that timestamp to see the actual screen state at the moment of failure.
+3. **Check Maestro debug artifacts** at `~/.maestro/tests/<timestamp>/` — failure screenshot, `maestro.log`, and the commands JSON.
+4. **Fix, re-run, re-inspect.** Treat a run with any ANR/redbox frame as failed even if Maestro exited 0.
+
+### Failure patterns & fixes (observed in this repo)
+
+| Symptom in frames / log | Root cause | Fix |
+|-------------------------|-----------|-----|
+| "isn't responding" ANR mid-flow | `screenrecord` + parallel `screencap` sampler overloaded the emulator | Record only; extract frames from the video afterward |
+| ANR immediately after `launchApp` | Cold start raced Metro's first bundle rebuild | Pre-warm: `am force-stop` + launcher intent + ~12s before `maestro test` |
+| `Element not found` on a lower field | `tapOn` does not auto-scroll; field off-screen / behind keyboard | `scrollUntilVisible` before each field tap and assertion |
+
+### Reliability checklist for a clean recorded run
+
+- Jest + `tsc` green first (don't record broken code).
+- Pre-warm the app so `launchApp` is fast.
+- `scrollUntilVisible` before lower fields/asserts; `hideKeyboard` after typing.
+- One capture mechanism (`screenrecord`); frames come from ffmpeg, not a live loop.
+- Each screen's recording is attached to its tracker issue with the result summary.
+
+> Note on `ffmpeg`: it may not appear on a restricted `which` PATH but is still runnable at `/usr/bin/ffmpeg`.
+
+---
+
 ## Conclusion
 
 Harness engineering for React Native is not just a testing practice—it's an **enabling technology for AI-assisted development**. By providing structured, automated verification with device recordings, this harness allows agentic AI systems to safely generate, test, and refine mobile application code.

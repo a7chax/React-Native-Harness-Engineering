@@ -1,0 +1,260 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RegisterForm matches snapshot 1`] = `
+<View
+  style={
+    {
+      "gap": 4,
+      "width": "100%",
+    }
+  }
+  testID="register-form"
+>
+  <Text
+    style={
+      {
+        "color": "#000",
+        "fontSize": 18,
+        "fontWeight": "600",
+        "marginBottom": 4,
+      }
+    }
+  >
+    Create Account
+  </Text>
+  <View
+    style={
+      {
+        "marginVertical": 6,
+        "width": "100%",
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#444",
+          "fontSize": 13,
+          "marginBottom": 4,
+        }
+      }
+    >
+      Full name
+    </Text>
+    <TextInput
+      accessibilityLabel="register-name-input"
+      autoCapitalize="words"
+      autoCorrect={false}
+      onChangeText={[Function]}
+      placeholder="Enter your full name"
+      placeholderTextColor="#999"
+      style={
+        [
+          {
+            "backgroundColor": "#fff",
+            "borderColor": "#ccc",
+            "borderRadius": 5,
+            "borderWidth": 1,
+            "color": "#000",
+            "height": 40,
+            "paddingHorizontal": 10,
+          },
+          null,
+        ]
+      }
+      testID="register-name-input"
+      value=""
+    />
+  </View>
+  <View
+    style={
+      {
+        "marginVertical": 6,
+        "width": "100%",
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#444",
+          "fontSize": 13,
+          "marginBottom": 4,
+        }
+      }
+    >
+      Email
+    </Text>
+    <TextInput
+      accessibilityLabel="register-email-input"
+      autoCapitalize="none"
+      autoCorrect={false}
+      keyboardType="email-address"
+      onChangeText={[Function]}
+      placeholder="Enter your email"
+      placeholderTextColor="#999"
+      style={
+        [
+          {
+            "backgroundColor": "#fff",
+            "borderColor": "#ccc",
+            "borderRadius": 5,
+            "borderWidth": 1,
+            "color": "#000",
+            "height": 40,
+            "paddingHorizontal": 10,
+          },
+          null,
+        ]
+      }
+      testID="register-email-input"
+      value=""
+    />
+  </View>
+  <View
+    style={
+      {
+        "marginVertical": 6,
+        "width": "100%",
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#444",
+          "fontSize": 13,
+          "marginBottom": 4,
+        }
+      }
+    >
+      Password
+    </Text>
+    <TextInput
+      accessibilityLabel="register-password-input"
+      autoCapitalize="none"
+      autoCorrect={false}
+      onChangeText={[Function]}
+      placeholder="Create a password"
+      placeholderTextColor="#999"
+      secureTextEntry={true}
+      style={
+        [
+          {
+            "backgroundColor": "#fff",
+            "borderColor": "#ccc",
+            "borderRadius": 5,
+            "borderWidth": 1,
+            "color": "#000",
+            "height": 40,
+            "paddingHorizontal": 10,
+          },
+          null,
+        ]
+      }
+      testID="register-password-input"
+      value=""
+    />
+  </View>
+  <View
+    style={
+      {
+        "marginVertical": 6,
+        "width": "100%",
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#444",
+          "fontSize": 13,
+          "marginBottom": 4,
+        }
+      }
+    >
+      Confirm password
+    </Text>
+    <TextInput
+      accessibilityLabel="register-confirm-password-input"
+      autoCapitalize="none"
+      autoCorrect={false}
+      onChangeText={[Function]}
+      placeholder="Re-enter your password"
+      placeholderTextColor="#999"
+      secureTextEntry={true}
+      style={
+        [
+          {
+            "backgroundColor": "#fff",
+            "borderColor": "#ccc",
+            "borderRadius": 5,
+            "borderWidth": 1,
+            "color": "#000",
+            "height": 40,
+            "paddingHorizontal": 10,
+          },
+          null,
+        ]
+      }
+      testID="register-confirm-password-input"
+      value=""
+    />
+  </View>
+  <View
+    accessibilityLabel="register-submit-button"
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#0a7ea4",
+        "borderRadius": 6,
+        "height": 44,
+        "justifyContent": "center",
+        "marginTop": 10,
+        "opacity": 1,
+      }
+    }
+    testID="register-submit-button"
+  >
+    <Text
+      style={
+        {
+          "color": "#fff",
+          "fontSize": 16,
+          "fontWeight": "600",
+        }
+      }
+    >
+      Register
+    </Text>
+  </View>
+</View>
+`;
