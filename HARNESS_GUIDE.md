@@ -38,19 +38,20 @@ This document describes the **harness engineering architecture** for React Nativ
       └────┬─────┘      └───┬──────┘    │  LAYER    │    └─────┬────┘
            │                │           └────┬──────┘          │
       ┌────▼─────────┬──────▼───┐            │           ┌─────▼─────┐
-      │ Unit Tests   │ UI Tests  │    Device Screen      │  Issue    │
-      │ Snapshots    │           │    Recording (MP4)    │  Tracking │
-      │              │           │                       │           │
-      │ ✓ 6 tests    │ ✓ Native  │    Parallel          │ Metadata  │
-      │ ✓ 1 snapshot │   Testing │    Execution         │ & Video   │
+      │ Unit + UI    │ Structural│   Device Screen       │  Issue    │
+      │ + Visual     │ Snapshots │   Recording (MP4)     │  Tracking │
+      │ Regression   │           │                       │           │
+      │ ✓ 54 tests   │ ✓ 5 snaps │   Parallel            │ Metadata, │
+      │ ✓ Layer 6    │           │   Execution           │ Video,    │
+      │   pixel diff │           │                       │ Diff PNGs │
       └──────────────┴───────────┘                       └───────────┘
            │                                                    │
            └────────────────────┬─────────────────────────────┘
                                 │
-                    ┌───────────▼──────────┐
-                    │   TEST COMPLETION   │
-                    │   Report Generation │
-                    └────────────────────┘
+                ┌───────────────▼──────────────┐
+                │      TEST COMPLETION         │
+                │  Report + Visual Diff Output │
+                └──────────────────────────────┘
 ```
 
 ---
