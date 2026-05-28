@@ -279,6 +279,81 @@ npx jest --updateSnapshot
 - Performance analysis
 - Documentation/reporting
 
+### Layer 6: Visual Regression (jest-image-snapshot)
+
+**Scope**: Pixel-level regression detection on ffmpeg-extracted frames
+
+**Why this layer exists**: Layers 1–3 catch logic / DOM / component-tree
+regressions. Layers 4–5 capture end-to-end behavior as a video. Neither
+catches *visual* regressions — a button drifting 4px, a colour token
+swap, a missing icon — because Maestro asserts on `id` / `text`, not on
+pixels. Layer 6 closes that gap by diffing extracted frames against
+committed PNG baselines, gated by the same Jest gate as Layers 1–3.
+
+**Library**: [`jest-image-snapshot`](https://github.com/americanexpress/jest-image-snapshot)
+(actively maintained, pure-JS pixel diff via `pixelmatch`). Chosen over
+`react-native-owl` because it (a) extends the existing `jest-expo`
+preset rather than replacing it, (b) consumes the frames Layer 5 already
+produces instead of spinning up its own device driver, (c) doesn't
+contend with `screenrecord`/Maestro for the device (Layer 5's hazard),
+and (d) works with the managed Expo workflow with no `prebuild`.
+
+**Files**:
+```
+__tests__/visual/
+├── image-snapshot-matcher-test.ts     ← wiring smoke test
+├── frameUtils-test.ts                 ← unit tests for cropTopRows
+├── maestro-frames-test.ts             ← diffs Maestro frames vs baselines
+└── __image_snapshots__/
+    ├── harness-fixture-red-16.png     ← matcher contract baseline
+    └── maestro-<flow>-<frame>.png     ← per-flow per-frame baselines
+
+lib/visual/
+└── frameUtils.ts                      ← cropTopRows + status-bar constants
+
+jest.setup.ts                          ← registers toMatchImageSnapshot
+```
+
+**Input**:
+- `.maestro/recordings/frames/<flow>/*.png` — produced by the ffmpeg
+  frame extraction step (see "Recording Inspection" in
+  `.skills/harness-engineering/SKILL.md`).
+
+**Output**:
+- **Pass**: silent — baseline matched within tolerance.
+- **Fail**: Jest assertion failure + diff PNG written to
+  `__tests__/visual/__image_snapshots__/__diff_output__/<id>-diff.png`
+  (git-ignored; upload alongside the MP4 to the issue tracker).
+
+**Tolerance**: `failureThreshold: 0.02`, `failureThresholdType: 'percent'`
+— 2% pixels may differ to absorb emulator font hinting / sub-pixel drift
+between runs. Tune per flow if needed.
+
+**Status-bar masking**: Before diffing, each frame is fed through
+`cropTopRows(buf, statusBarPxFor(flow))` (default 75 px,
+overridable per flow in `maestro-frames-test.ts`). This strips the
+Android status bar — clock, battery, signal — which otherwise drifts
+every run and produces 100% false-positive diffs. The crop is applied
+to **both** the new frame and (implicitly via baseline regeneration)
+the baseline, so the regression contract is over the masked body only.
+Smoke tests cover both directions: a status-bar-only change is invisible
+(masked away) while a body-region change is detected.
+
+**Discipline**: Diff **action-boundary frames only** (the frame right
+after each `tapOn` / `inputText` / assertion), not every `fps=1` frame.
+Intermediate frames drift in timing run-to-run and produce flaky
+failures even on a stable build.
+
+**Update strategy** (same rule as Layer 3 structural snapshots):
+```bash
+npx jest __tests__/visual/maestro-frames-test.ts -u
+# Only after reviewing the diff PNG and confirming the visual change is intentional.
+```
+
+**Fresh-checkout behavior**: When no frames have been extracted yet,
+`maestro-frames-test.ts` reports as a single skipped suite so CI stays
+green on PRs that don't run the device harness.
+
 ---
 
 ## Execution Pipeline
@@ -319,6 +394,15 @@ START
   │   ├─ Pull video from device
   │   └─ Delete remote file
   │
+  ├─► [EXTRACT FRAMES] (ffmpeg - 1-2s)
+  │   ├─ fps=1 (or fps=1/3 for long flows)
+  │   └─ Write to .maestro/recordings/frames/<flow>/
+  │
+  ├─► [VISUAL REGRESSION] (Jest - 1-2s)
+  │   ├─ npx jest __tests__/visual/maestro-frames-test.ts
+  │   ├─ Diff each frame vs committed baseline
+  │   └─ Write *-diff.png on failure (git-ignored)
+  │
   ├─► [RESULT AGGREGATION] (2s)
   │   ├─ Parse Jest output
   │   ├─ Verify video file
@@ -342,8 +426,10 @@ START
 | ADB start | ~1s | Yes (with Maestro) |
 | Maestro | 20-30s | Yes (with ADB) |
 | ADB stop/pull | 5s | Sequential |
+| ffmpeg frame extract | 1-2s | Sequential |
+| Visual regression (Jest) | 1-2s | Sequential (post-frames) |
 | Result aggregation | 2s | Sequential |
-| **Total** | **45-60s** | ~30s saved via parallelization |
+| **Total** | **48-65s** | ~30s saved via parallelization |
 
 **Without parallelization**: ~70s  
 **With ADB + Maestro parallel**: ~45s  
