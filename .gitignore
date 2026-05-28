@@ -41,6 +41,12 @@ app-example
 # Maestro device screen recordings
 .maestro/recordings/*.mp4
 
+# Extracted Maestro frames (regenerated per run by the harness)
+.maestro/recordings/frames/
+
+# jest-image-snapshot diff output (regenerated on failure; baselines stay tracked)
+**/__image_snapshots__/__diff_output__/
+
 # generated native folders
 /ios
 /android

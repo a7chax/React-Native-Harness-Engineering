@@ -40,6 +40,13 @@ For each feature/bug change, cover all relevant layers:
 3. **Snapshot update**
    - Update snapshot only when UI change is intentional.
    - Never blindly accept snapshots; confirm the visual/structural delta is expected.
+4. **Visual regression (when frames exist)**
+   - For changes that affect rendered pixels (layout, typography, color
+     tokens, icons, spacing), diff Maestro-extracted frames against
+     committed PNG baselines under
+     `__tests__/visual/__image_snapshots__/`.
+   - Same update discipline as snapshots: only `-u` after reviewing
+     the `*-diff.png` and confirming the visual delta is intentional.
 
 When a layer is not applicable, explicitly state why.
 
@@ -72,9 +79,16 @@ When the user asks to "test" or run tests, execute ALL test surfaces in this ord
 5. **Run Maestro flows**: Execute all `.maestro/*.yaml` flows
 6. **Stop ADB recording**: Automatically terminate recording and pull video when Maestro completes
 7. **Extract & inspect frames**: Split the pulled video into stills with `ffmpeg` (every 1s, or every 3s for long flows) and read them to verify on-screen behavior
-8. **Create/Update Linear issue**: Document test results and specifications
-9. **Upload recording to Linear**: Attach video file directly to the Linear issue (not links)
-10. **Update issue description**: Add video attachment info at the top of description for visibility
+8. **Run visual regression**: After frames are extracted into
+   `.maestro/recordings/frames/<flow>/`, run
+   `npx jest __tests__/visual/maestro-frames-test.ts --ci --watchAll=false`
+   to diff action-boundary frames against committed baselines under
+   `__tests__/visual/__image_snapshots__/`. On failure, attach the
+   resulting `*-diff.png` files (under `__diff_output__/`) to the Linear
+   issue alongside the MP4.
+9. **Create/Update Linear issue**: Document test results and specifications
+10. **Upload recording to Linear**: Attach video file directly to the Linear issue (not links)
+11. **Update issue description**: Add video attachment info at the top of description for visibility
 
 This is the **default behavior** when the user says "test". No additional prompt is required.
 
@@ -166,6 +180,82 @@ ffmpeg -loglevel error -y -i "$LOCAL" -vf fps=1 "$FRAMES/frame_%03d.png"
 
 - **Pre-warm** the app before `maestro test` (`am force-stop` + launcher intent + ~10–12s wait) so Maestro's `launchApp` cold-start doesn't ANR while Metro rebuilds the JS bundle.
 - `tapOn` does **not** auto-scroll. On scrollable screens use `scrollUntilVisible` before each field tap and assertion; assert a field's inline error right after typing while it is on screen.
+
+## Visual Regression (jest-image-snapshot)
+
+After ffmpeg writes per-flow frames to `.maestro/recordings/frames/<flow>/`,
+run the visual regression suite to lock visual behavior against committed
+baselines. This is **Layer 6** in `HARNESS_GUIDE.md` — pixel-level
+regression detection that closes the gap Maestro can't (Maestro asserts
+on `id`/`text`, not pixels).
+
+### Run the suite
+
+```bash
+npx jest __tests__/visual/maestro-frames-test.ts --ci --watchAll=false
+```
+
+- On first encounter for a flow, baselines are auto-written to
+  `__tests__/visual/__image_snapshots__/maestro-<flow>-<frame>.png`.
+  **Commit them** — they are the regression contract.
+- On subsequent runs the matcher diffs the new frame against the
+  baseline; failures write `*-diff.png` files to
+  `__tests__/visual/__image_snapshots__/__diff_output__/` (git-ignored).
+- Tolerance is `failureThreshold: 0.02, failureThresholdType: 'percent'`
+  to absorb emulator font hinting / sub-pixel drift. Tighten or loosen
+  per flow if a particular screen is more/less stable.
+- The Android **status bar is cropped before diff** via
+  `cropTopRows(buf, statusBarPxFor(flow))` (default 75 px). Without
+  this, the clock/battery/signal indicators would dominate every diff
+  and the layer would be unusable. If a flow runs on a non-Pixel
+  emulator (taller bar, notch skin), add an entry to
+  `STATUS_BAR_PX_BY_FLOW` in `__tests__/visual/maestro-frames-test.ts`.
+
+### Pick the right frames
+
+Do **not** diff every `fps=1` frame — intermediate-frame timing drifts
+between runs and produces flaky failures. Diff **action-boundary
+frames**: the frame right after each `tapOn`, `inputText`, assertion,
+or navigation. Use the Maestro log's `COMPLETED` timestamps to pick
+those frames (same heuristic as "read the perfect moment" in the
+"Recording Inspection" section above).
+
+A clean workflow:
+
+```bash
+# 1. Extract all frames as usual
+FRAMES=".maestro/recordings/frames/${BASENAME}"
+mkdir -p "$FRAMES"
+ffmpeg -loglevel error -y -i "$LOCAL" -vf fps=1 "$FRAMES/frame_%03d.png"
+
+# 2. Prune to action-boundary frames only (using Maestro timestamps)
+#    e.g. keep frames 003, 009, 014, 020 — drop the rest
+#    (or write them out at exact timestamps with -ss instead of fps=1)
+
+# 3. Diff
+npx jest __tests__/visual/maestro-frames-test.ts --ci --watchAll=false
+```
+
+### Updating baselines
+
+Same rule as the structural `.snap` files in Layer 3 — only `-u` after
+reviewing the diff PNG and confirming the visual change is intended:
+
+```bash
+npx jest __tests__/visual/maestro-frames-test.ts -u
+```
+
+If the diff is **not** intended, treat it as a regression and fix the
+production code, not the baseline.
+
+### Fail handling in the issue tracker
+
+When a visual diff fails:
+- Upload the matching MP4 to Linear (existing flow below).
+- **Also** attach each `__diff_output__/*-diff.png` for the failing
+  frames so the reviewer can see *exactly* which pixels drifted.
+- Reference the frame index and the matching Maestro step in the
+  description so the reviewer can correlate quickly.
 
 ## Issue Tracking Upload
 
