@@ -1,6 +1,6 @@
 # React Native Harness Engineering
 
-A harness-engineering setup for React Native / Expo apps that combines **Jest** (unit/UI/snapshot), **Maestro** (E2E on a real device), and **ADB screen recording** — with a critical extra step: after every recorded run the video is split into still frames with **ffmpeg** and the frames are **read** to confirm what actually happened on screen. Maestro reporting "all steps passed" is not trusted on its own; the pixels are verified.
+A harness-engineering setup for React Native / Expo apps that combines **Jest** (unit/UI/snapshot), **Maestro** (E2E on a real device), **ADB screen recording**, **ffmpeg frame extraction**, and **jest-image-snapshot pixel diff** — with a critical extra step at each layer: after every recorded run the video is split into still frames, the frames are **read** to confirm what actually happened on screen, **and** diffed against committed baselines so visual drift fails the Jest gate. Maestro reporting "all steps passed" is not trusted on its own; the pixels are verified — twice.
 
 The app under test is a small, clean **auth flow** (mock/local auth, no backend) used to exercise the harness end-to-end.
 
@@ -57,7 +57,7 @@ Shared building blocks: `lib/authValidation.ts` (validators), `components/ui/{Fo
 ## Harness architecture
 
 ```
-Jest Layer (Unit / UI / Snapshots)        ← fast, no device
+Jest Layer (Unit / UI / Snapshots)            ← fast, no device
         ↓ (green gate)
 ADB screen recording ═══════════ Maestro E2E flow   ← real device, recorded
         ↓                               ↓
@@ -65,10 +65,13 @@ ADB screen recording ═══════════ Maestro E2E flow   ← re
                             ↓
                    read frames = visual verification
                             ↓
-                  attach recording to the issue tracker
+              jest-image-snapshot pixel diff vs baselines
+                            ↓
+                  attach recording + diff PNGs
+                  to the issue tracker
 ```
 
-**Jest** catches logic/structure/regression bugs without a device. **Maestro** drives real user flows. **ADB** captures the screen as MP4. **ffmpeg + frame reading** turns the video into still images that can actually be inspected (an MP4 can't be "watched" by a coding agent — frames can be read).
+**Jest** catches logic/structure/regression bugs without a device. **Maestro** drives real user flows. **ADB** captures the screen as MP4. **ffmpeg + frame reading** turns the video into still images that can actually be inspected (an MP4 can't be "watched" by a coding agent — frames can be read). **jest-image-snapshot** then closes the loop by diffing those frames against committed baselines, so visual regressions (layout shift, color drift, missing icons) fail the Jest gate the same way structural snapshots do.
 
 ### Why ADB screen recording (not Maestro's recorder)?
 
@@ -132,17 +135,33 @@ appId: com.anonymous.reactnativeuitest
 ### Layer 5 — Device recording + frame inspection
 Every recorded run is split into frames and visually verified (see below).
 
+### Layer 6 — Visual regression (jest-image-snapshot)
+The extracted frames are also diffed pixel-by-pixel against committed baselines under `__tests__/visual/__image_snapshots__/`. Closes the gap Maestro can't fill — Maestro asserts on `id`/`text`, not pixels, so a button drifting 4 px or a color token swap looks "passing" to it. Visual regressions show up as ordinary Jest assertion failures, gated by the same `--ci` run as the other layers.
+
+```bash
+# Diff every Maestro-extracted frame against its baseline
+npx jest __tests__/visual/maestro-frames-test.ts --ci --watchAll=false
+
+# Accept intentional visual changes (after reviewing the *-diff.png)
+npx jest __tests__/visual/maestro-frames-test.ts -u
+```
+
+The Android status bar (clock, battery, signal) is **cropped before diff** via `lib/visual/frameUtils.ts → cropTopRows()` — without that mask, per-run chrome drift would dominate every comparison. Per-flow overrides live in `STATUS_BAR_PX_BY_FLOW` inside the suite. On fresh checkouts with no extracted frames yet, the suite reports as a single skipped test so CI stays green.
+
+> Library choice: [`jest-image-snapshot`](https://github.com/americanexpress/jest-image-snapshot) over [`react-native-owl`](https://github.com/FormidableLabs/react-native-owl) — extends the existing `jest-expo` preset, consumes the frames Layer 5 already produces (no second device driver contending with `screenrecord`/Maestro), works with the managed Expo workflow, actively maintained (Owl archived 2023).
+
 ---
 
 ## Test results & coverage
 
-`npx jest --coverage --watchAll=false` → **9 suites, 48 tests passing**, 4 snapshots. Overall coverage **99.09% statements · 93.42% branch · 100% functions · 99.04% lines**.
+`npx jest --coverage --watchAll=false --ci` → **11 suites passing + 1 intentionally skipped (the `maestro-frames-test.ts` conditional suite — engages only when extracted frames exist), 54 tests passing**, 5 snapshots. Overall coverage **99.18% statements · 94.04% branch · 100% functions · 99.14% lines**.
 
 | Layer | File | % Stmts | % Branch | % Funcs | % Lines |
 |-------|------|--------:|---------:|--------:|--------:|
-| **All files** | — | **99.09** | **93.42** | **100** | **99.04** |
+| **All files** | — | **99.18** | **94.04** | **100** | **99.14** |
 | Unit (logic) | `lib/authValidation.ts` | 100 | 100 | 100 | 100 |
 | Unit (logic) | `components/RegisterForm/validation.ts` | 100 | 100 | 100 | 100 |
+| Unit (visual) | `lib/visual/frameUtils.ts` | 100 | 100 | 100 | 100 |
 | UI (screen) | `app/index.tsx` — Login | 100 | 100 | 100 | 100 |
 | UI (screen) | `app/register.tsx` | 100 | 100 | 100 | 100 |
 | UI (screen) | `app/forgot-password.tsx` | 100 | 100 | 100 | 100 |
@@ -224,6 +243,7 @@ A non-zero Maestro exit, **or** any frame showing an ANR/redbox, means the run i
 react-native-testing-sample/
 ├── README.md                     ← this overview
 ├── HARNESS_GUIDE.md              ← engineering deep-dive
+├── jest.setup.ts                 ← registers toMatchImageSnapshot (Layer 6)
 ├── app/                          ← Expo Router screens (tab-less stack)
 │   ├── _layout.tsx               ← Stack: index, register, forgot-password, home
 │   ├── index.tsx                 ← Login
@@ -233,16 +253,25 @@ react-native-testing-sample/
 │   └── __tests__/                ← screen UI tests + snapshots
 ├── lib/
 │   ├── authValidation.ts         ← shared validators
-│   └── __tests__/
+│   ├── __tests__/
+│   └── visual/
+│       └── frameUtils.ts         ← cropTopRows + status-bar masking (Layer 6)
 ├── components/
 │   ├── RegisterForm/             ← register form + validation + tests
 │   └── ui/                       ← FormTextInput, PrimaryButton, AuthScreen (+ tests)
+├── __tests__/visual/             ← visual regression layer (Layer 6)
+│   ├── image-snapshot-matcher-test.ts   ← matcher wiring smoke test
+│   ├── frameUtils-test.ts               ← cropTopRows unit tests
+│   ├── maestro-frames-test.ts           ← diffs Maestro frames vs baselines
+│   └── __image_snapshots__/             ← committed PNG baselines (regression contract)
 ├── .maestro/
 │   ├── login_test.yaml
 │   ├── register_form_test.yaml
 │   ├── forgot_password_test.yaml
 │   ├── home_test.yaml
-│   └── recordings/               ← MP4 recordings (git-ignored)
+│   └── recordings/
+│       ├── *.mp4                 ← raw recordings (git-ignored)
+│       └── frames/               ← extracted PNGs per flow (git-ignored, regenerated)
 └── .skills/
     └── harness-engineering/      ← TDD + recording + frame-inspection harness skill
 ```
@@ -252,9 +281,11 @@ react-native-testing-sample/
 ## Common commands
 
 ```bash
-npx jest --watchAll=false                          # all jest layers
+npx jest --watchAll=false --ci                     # all jest layers (incl. visual)
 npx jest app/__tests__/login-screen-test.tsx       # one suite
+npx jest __tests__/visual/ --ci                    # visual regression only (Layer 6)
 npx jest --updateSnapshot                          # accept intentional snapshot changes
+npx jest __tests__/visual/maestro-frames-test.ts -u  # accept intentional visual changes
 npx tsc --noEmit                                   # type check
 maestro test .maestro/home_test.yaml               # one E2E flow
 ffmpeg -i video.mp4 -vf fps=1 frame_%03d.png       # split a recording into frames
@@ -272,9 +303,10 @@ START
   ├─► Pre-warm app (avoid cold-start ANR)
   ├─► screenrecord  +  maestro test   (recorded run)
   ├─► pull video → .maestro/recordings/
-  ├─► ffmpeg: extract frames (1 fps)
+  ├─► ffmpeg: extract frames (1 fps) → .maestro/recordings/frames/<flow>/
   ├─► READ frames → verify on-screen behavior        ← required, not optional
-  └─► attach recording to issue tracker (Linear)
+  ├─► jest-image-snapshot pixel diff → catch visual drift (Layer 6)
+  └─► attach recording + *-diff.png to issue tracker (Linear)
 END
 ```
 
@@ -312,7 +344,8 @@ ls ~/.maestro/tests/
 - ✅ Record with `screenrecord` only; inspect via extracted frames
 - ✅ Pre-warm the app before recorded runs
 - ✅ Don't trust a green Maestro log alone — confirm the frames
-- ✅ Update snapshots only for intentional changes
+- ✅ Update snapshots only for intentional changes (structural **and** visual)
+- ✅ Visual regression: diff **action-boundary frames only**, mask the status bar, attach `*-diff.png` artifacts on failure
 
 ---
 
@@ -322,11 +355,11 @@ See **[HARNESS_GUIDE.md](./HARNESS_GUIDE.md)** for architecture, design principl
 
 ## References
 
-- [Jest](https://jestjs.io/) · [React Native Testing Library](https://callstack.github.io/react-native-testing-library/) · [Maestro](https://maestro.mobile.dev/) · [ADB](https://developer.android.com/tools/adb) · [Expo](https://docs.expo.dev/) · [ffmpeg](https://ffmpeg.org/)
+- [Jest](https://jestjs.io/) · [React Native Testing Library](https://callstack.github.io/react-native-testing-library/) · [Maestro](https://maestro.mobile.dev/) · [ADB](https://developer.android.com/tools/adb) · [Expo](https://docs.expo.dev/) · [ffmpeg](https://ffmpeg.org/) · [jest-image-snapshot](https://github.com/americanexpress/jest-image-snapshot)
 
 ---
 
-**Harness Version**: 2.0 · **Stack**: React Native + Expo Router + Jest + Maestro + ADB + ffmpeg
+**Harness Version**: 2.1 · **Stack**: React Native + Expo Router + Jest + Maestro + ADB + ffmpeg + jest-image-snapshot
 
 ---
 
@@ -336,11 +369,11 @@ When an AI agent generates code, the harness is what makes its output trustworth
 
 1. **Verification without human review** — jest + tsc gate every change; the device recording + frames prove real behavior.
 2. **Deterministic feedback loop** — clear pass/fail plus visual evidence guide the next iteration.
-3. **Safety through layers** — unit → UI → snapshot → E2E → recorded-and-inspected.
-4. **Trust through artifacts** — each screen's recording is attached to its tracker issue, and frames are inspected (and, on failure, read action-by-action) rather than assuming a green log is the truth.
+3. **Safety through layers** — unit → UI → structural snapshot → E2E → recorded-and-inspected → **visual regression** (pixel diff).
+4. **Trust through artifacts** — each screen's recording is attached to its tracker issue, frames are inspected (and, on failure, read action-by-action), **and** every action-boundary frame is diffed against a committed baseline. A green Maestro log no longer ends the trust chain; the pixels do.
 
 ```
-AGENT CODE  →  HARNESS (jest · tsc · maestro · record · ffmpeg frames)  →  PASS/FAIL + frames  →  next iteration
+AGENT CODE  →  HARNESS (jest · tsc · maestro · record · ffmpeg frames · pixel diff)  →  PASS/FAIL + frames + *-diff.png  →  next iteration
 ```
 
 Reference: OpenAI — [Harness Engineering for AI](https://openai.com/index/harness-engineering/).
