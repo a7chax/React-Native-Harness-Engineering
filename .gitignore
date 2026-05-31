@@ -38,11 +38,8 @@ yarn-error.*
 
 app-example
 
-# Maestro device screen recordings
-.maestro/recordings/*.mp4
-
-# Extracted Maestro frames (regenerated per run by the harness)
-.maestro/recordings/frames/
+# Appium per-test screenshots (regenerated each run; baselines stay tracked)
+automation_test/screenshots/
 
 # jest-image-snapshot diff output (regenerated on failure; baselines stay tracked)
 **/__image_snapshots__/__diff_output__/
@@ -56,3 +53,8 @@ app-example
 
 # Jest coverage reports
 coverage/
+
+# Appium / WebdriverIO runtime artifacts
+automation_test/logs/
+**/appium*.log
+.wdio/

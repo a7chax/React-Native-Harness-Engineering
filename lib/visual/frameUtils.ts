@@ -15,8 +15,8 @@ import { PNG } from 'pngjs';
 
 /**
  * Default Android status-bar height in pixels for a stock Pixel-class
- * emulator at 1080×1920+ density. Override per-flow in
- * `maestro-frames-test.ts` if a flow runs against a different emulator
+ * emulator at 1080×1920+ density. Override per-screenshot in
+ * `appium-screenshots-test.ts` if a run targets a different emulator
  * profile (taller status bar on tablets, notch on certain skins).
  */
 export const ANDROID_STATUS_BAR_PX_DEFAULT = 75;
