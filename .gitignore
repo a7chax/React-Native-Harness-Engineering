@@ -58,3 +58,6 @@ coverage/
 automation_test/logs/
 **/appium*.log
 .wdio/
+
+# MMKV data pulled off a device for inspection (not source)
+mmkv-stored/
