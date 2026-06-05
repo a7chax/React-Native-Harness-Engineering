@@ -118,6 +118,1220 @@ exports[`HomeScreen matches snapshot 1`] = `
             You're logged in 🎉
           </Text>
           <View
+            style={
+              {
+                "gap": 20,
+                "marginTop": 16,
+              }
+            }
+            testID="mmkv-demo"
+          >
+            <View
+              style={
+                {
+                  "gap": 6,
+                }
+              }
+              testID="mmkv-encrypted-section"
+            >
+              <Text
+                style={
+                  [
+                    {
+                      "color": "#11181C",
+                    },
+                    undefined,
+                    undefined,
+                    {
+                      "fontSize": 16,
+                      "fontWeight": "600",
+                      "lineHeight": 24,
+                    },
+                    undefined,
+                    undefined,
+                    {
+                      "marginBottom": 2,
+                    },
+                  ]
+                }
+              >
+                Encrypted (10)
+              </Text>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-encrypted-authToken"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  authToken
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  eyJhbGciOiJIUzI1NiJ9.demo-access.payload
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-encrypted-refreshToken"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  refreshToken
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  rt_9f8c2a1b7e4d6f3a0c5b8e2d
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-encrypted-userId"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  userId
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  usr_10293847
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-encrypted-sessionId"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  sessionId
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  sess_a1b2c3d4e5f6a7b8
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-encrypted-deviceId"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  deviceId
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  dev_7c9e2f4a8b1d3e6f
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-encrypted-apiKey"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  apiKey
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  sk_live_51HxDemoKeyAbc123Xyz
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-encrypted-pinHash"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  pinHash
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  $2b$10$N9qo8uLOickgx2ZMRZoMye
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-encrypted-biometricSecret"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  biometricSecret
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  bio_4f7a9c2e8d1b6035
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-encrypted-cardLast4"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  cardLast4
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  4242
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-encrypted-phoneNumber"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  phoneNumber
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  +628123456789
+                </Text>
+              </View>
+            </View>
+            <View
+              style={
+                {
+                  "gap": 6,
+                }
+              }
+              testID="mmkv-plain-section"
+            >
+              <Text
+                style={
+                  [
+                    {
+                      "color": "#11181C",
+                    },
+                    undefined,
+                    undefined,
+                    {
+                      "fontSize": 16,
+                      "fontWeight": "600",
+                      "lineHeight": 24,
+                    },
+                    undefined,
+                    undefined,
+                    {
+                      "marginBottom": 2,
+                    },
+                  ]
+                }
+              >
+                Plain (10)
+              </Text>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-plain-theme"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  theme
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  dark
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-plain-language"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  language
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  en-US
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-plain-onboardingDone"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  onboardingDone
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  true
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-plain-lastTab"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  lastTab
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  home
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-plain-fontScale"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  fontScale
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  1.0
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-plain-hapticsEnabled"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  hapticsEnabled
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  true
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-plain-notificationsEnabled"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  notificationsEnabled
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  false
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-plain-currency"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  currency
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  IDR
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-plain-recentSearch"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  recentSearch
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  react native mmkv
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "gap": 12,
+                    "justifyContent": "space-between",
+                  }
+                }
+                testID="mmkv-plain-appVersion"
+              >
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "opacity": 0.7,
+                      },
+                    ]
+                  }
+                >
+                  appVersion
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={
+                    [
+                      {
+                        "color": "#11181C",
+                      },
+                      {
+                        "fontSize": 16,
+                        "lineHeight": 24,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "flexShrink": 1,
+                        "textAlign": "right",
+                      },
+                    ]
+                  }
+                >
+                  1.0.0
+                </Text>
+              </View>
+            </View>
+          </View>
+          <View
             accessibilityLabel="logout-button"
             accessibilityRole="button"
             accessibilityState={

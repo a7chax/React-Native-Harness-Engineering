@@ -1,6 +1,6 @@
 /**
  * Verifies the `toMatchImageSnapshot` matcher is wired into Jest via
- * `jest.setup.ts` so the harness's ffmpeg frames can be diffed against
+ * `jest.setup.ts` so the harness's Appium screenshots can be diffed against
  * committed baselines (see HARNESS_GUIDE.md → Layer 6: Visual Regression).
  *
  * Fixtures are synthesized deterministically with `pngjs` — no binary

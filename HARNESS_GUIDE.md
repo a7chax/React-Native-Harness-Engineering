@@ -4,6 +4,8 @@
 
 This document describes the **harness engineering architecture** for React Native/Expo applications. The harness is a sophisticated orchestration system integrating multiple test layers, device control, flow automation, and result aggregation into a unified testing pipeline.
 
+The end-to-end layer is built on **Appium + WebdriverIO** (UiAutomator2 driver, Mocha framework, TypeScript via `tsx`). Each E2E test captures **one screenshot** (pass or fail), and those screenshots are then **pixel-diffed against committed baselines** by a Jest visual-regression layer. The thesis: a green E2E log is *not* trusted on its own — the screenshot is read **and** diffed against a baseline, so visual regressions still fail the Jest gate.
+
 ---
 
 ## Table of Contents
@@ -13,7 +15,7 @@ This document describes the **harness engineering architecture** for React Nativ
 3. [System Components](#system-components)
 4. [Test Layer Integration](#test-layer-integration)
 5. [Execution Pipeline](#execution-pipeline)
-6. [Device Recording Strategy](#device-recording-strategy)
+6. [Screenshot Strategy](#screenshot-strategy)
 7. [Quality Assurance Framework](#quality-assurance-framework)
 8. [Implementation Guide](#implementation-guide)
 9. [Troubleshooting & Diagnostics](#troubleshooting--diagnostics)
@@ -33,26 +35,35 @@ This document describes the **harness engineering architecture** for React Nativ
            ├─────────────────┬──────────────────┬─────────────────┐
            │                 │                  │                 │
       ┌────▼─────┐      ┌───▼──────┐    ┌────▼──────┐    ┌─────▼────┐
-      │   JEST   │      │  ADB     │    │  MAESTRO  │    │  RESULT  │
-      │  LAYER   │      │ RECORDING│    │  E2E      │    │  TRACKING│
-      └────┬─────┘      └───┬──────┘    │  LAYER    │    └─────┬────┘
-           │                │           └────┬──────┘          │
-      ┌────▼─────────┬──────▼───┐            │           ┌─────▼─────┐
-      │ Unit + UI    │ Structural│   Device Screen       │  Issue    │
-      │ + Visual     │ Snapshots │   Recording (MP4)     │  Tracking │
-      │ Regression   │           │                       │           │
-      │ ✓ 54 tests   │ ✓ 5 snaps │   Parallel            │ Metadata, │
-      │ ✓ Layer 6    │           │   Execution           │ Video,    │
-      │   pixel diff │           │                       │ Diff PNGs │
-      └──────────────┴───────────┘                       └───────────┘
-           │                                                    │
-           └────────────────────┬─────────────────────────────┘
-                                │
-                ┌───────────────▼──────────────┐
-                │      TEST COMPLETION         │
-                │  Report + Visual Diff Output │
-                └──────────────────────────────┘
+      │   JEST   │      │  APPIUM  │    │  PER-TEST │    │  RESULT  │
+      │  LAYER   │      │ + WDIO   │    │ SCREENSHOT│    │  TRACKING│
+      │          │      │  E2E     │    │  CAPTURE  │    └─────┬────┘
+      └────┬─────┘      └───┬──────┘    └────┬──────┘          │
+           │                │                │                 │
+      ┌────▼─────────┬──────▼───┐       ┌────▼──────┐    ┌─────▼─────┐
+      │ Unit + UI    │ Structural│      │ afterTest  │    │  Issue    │
+      │ + Visual     │ Snapshots │      │ saves 1 PNG│    │  Tracking │
+      │ Regression   │           │      │ per test   │    │           │
+      │ ✓ Jest gate  │ ✓ .snap   │      │ (pass/fail)│    │ Metadata, │
+      │ ✓ Layer 6    │           │      │            │    │ Screenshot│
+      │   pixel diff │           │      │            │    │ Diff PNGs │
+      └──────┬───────┴───────────┘      └────┬───────┘    └─────┬─────┘
+             │                               │                  │
+             │   ┌───────────────────────────┘                  │
+             │   │  screenshots feed Layer 6 (jest-image-snapshot)
+             ▼   ▼                                               │
+      ┌──────────────────┐                                       │
+      │ VISUAL REGRESSION│ ── crop status bar → pixelmatch ──────┘
+      │  (Jest, 2% diff) │
+      └────────┬─────────┘
+               │
+   ┌───────────▼──────────────┐
+   │      TEST COMPLETION      │
+   │  Report + Visual Diff     │
+   └───────────────────────────┘
 ```
+
+The E2E flow is: **Appium (WebdriverIO) drives the app → the `afterTest` hook saves one screenshot per test → `jest-image-snapshot` crops the status bar and diffs each screenshot against a committed baseline.** No video, no frame extraction, no external media tooling.
 
 ---
 
@@ -63,41 +74,45 @@ This document describes the **harness engineering architecture** for React Nativ
 The harness coordinates multiple independent testing systems through a unified execution pipeline:
 
 - **Jest** handles unit/UI/snapshot testing
-- **ADB** captures device state in real-time
-- **Maestro** automates user interactions
+- **Appium + WebdriverIO** drives the real device through end-to-end flows
+- **Per-test screenshot capture** records one stable image per test
+- **Visual regression (Jest)** diffs those images against committed baselines
 - **Result aggregation** combines outputs
 
-Each layer operates independently; the harness synchronizes them.
+Each layer operates independently; the harness sequences them.
 
-### 2. **Parallel Execution**
+### 2. **Sequenced, Deterministic Stages**
 
-Recording and testing happen concurrently:
+E2E and visual regression run as a clean two-stage handoff rather than a racing background recorder:
 
 ```
 Timeline:
-T=0s     ├─ Start ADB recording
-T=1s     ├─ Start Maestro flows
-T=1-30s  ├─ [ADB recording] ════════════════════════════
-T=1-25s  ├─ [Maestro test] ═════════════════════════
-T=30s    └─ Stop ADB, pull video
+T=0s      ├─ Jest gate (unit + UI + snapshots) must pass
+T=5s      ├─ Verify device online (adb devices)
+T=6s      ├─ Appium auto-starts (@wdio/appium-service)
+T=6-60s   ├─ [WebdriverIO specs] ════════════════════════════
+          │   └─ afterTest saves 1 PNG per test → screenshots/
+T=60s     ├─ Appium session ends, screenshots on disk
+T=61-63s  └─ [Jest visual regression] diff PNGs vs baselines
 ```
 
-This reduces total execution time vs. sequential testing.
+One screenshot per test means one stable visual-regression key — the old "which intermediate frame do we diff" ambiguity is gone.
 
 ### 3. **Artifact-Centric**
 
 The harness produces verifiable artifacts:
 
-- **Test Reports**: JSON/text from Jest
-- **Device Recording**: MP4 video file (raw device output)
-- **Flow Results**: Maestro test verdicts
-- **Metadata**: Timestamps, device info, environment
+- **Test Reports**: JSON/text from Jest and the WebdriverIO `spec` reporter
+- **Per-test Screenshots**: one PNG per E2E test in `automation_test/screenshots/` (git-ignored, regenerated each run)
+- **Visual Baselines**: committed PNGs under `__tests__/visual/__image_snapshots__/`
+- **Diff PNGs**: written on visual-regression failure (git-ignored)
+- **Metadata**: timestamps, device info, environment
 
-Each artifact is immutable and traceable.
+Each baseline is immutable until intentionally updated with `-u`.
 
 ### 4. **Fail-Fast with Diagnostics**
 
-Jest failures prevent Maestro execution (no point running E2E if unit tests fail). Recording failures are reported but don't block results.
+Jest failures prevent the Appium run (no point running E2E if unit/UI/snapshot tests fail). The screenshot-capture hook is best-effort: it logs a warning and **never fails the run** if a single screenshot cannot be taken.
 
 ---
 
@@ -109,12 +124,26 @@ Jest failures prevent Maestro execution (no point running E2E if unit tests fail
 
 **Files**:
 ```
-components/
-├── EmailInput.tsx
+components/ui/
+├── AuthScreen.tsx
+├── FormTextInput.tsx
+├── PrimaryButton.tsx
 └── __tests__/
-    ├── EmailInput-test.tsx       ← Unit + UI tests
-    └── __snapshots__/
-        └── EmailInput-test.tsx.snap
+    ├── AuthScreen-test.tsx       ← Unit + UI tests
+    ├── FormTextInput-test.tsx
+    └── PrimaryButton-test.tsx
+
+app/
+├── index.tsx                     ← Login screen
+├── home.tsx
+├── forgot-password.tsx
+├── register.tsx
+└── __tests__/
+    ├── login-screen-test.tsx
+    ├── home-screen-test.tsx
+    ├── forgot-password-screen-test.tsx
+    ├── register-screen-test.tsx
+    └── __snapshots__/*.snap       ← Structural snapshots
 ```
 
 **Execution**:
@@ -128,64 +157,85 @@ npx jest --watchAll=false
 - Snapshot diffs
 - Error traces
 
-### ADB Device Recording
+### Appium + WebdriverIO E2E
 
-**Purpose**: Capture complete device screen output during testing
+**Purpose**: Automate real user interactions and validate app behavior on a real device/emulator
 
-**Why ADB over alternatives**:
+**Stack**:
+- **Appium 3** server with the **UiAutomator2** driver (Android)
+- **WebdriverIO** testrunner (`@wdio/cli`), **Mocha** framework, **`spec`** reporter
+- **TypeScript** specs run directly via **`tsx`** (no build step)
+- **`@wdio/appium-service`** auto-starts/stops the Appium server from `PATH` — you never launch it manually
 
-| Aspect | ADB screenrecord | Maestro record | UIAutomator |
-|--------|------------------|----------------|------------|
-| **Independence** | ✅ Works with any tool | ❌ Maestro-only | ❌ Inspector-only |
-| **Parallel** | ✅ Run simultaneous | ❌ Blocking | N/A |
-| **Full Capture** | ✅ Complete screen | ⚠️ Flow only | ❌ Limited |
-| **CI/CD Ready** | ✅ Non-interactive | ❌ Interactive | ❌ Interactive |
-| **Performance** | ✅ ~2-5% overhead | ❌ 20-30% | ❌ 30-50% |
+**Architecture — Page-Object Model**: raw selector strings never appear in specs. Each screen is a page object (a singleton instance) extending `BaseScreen`; specs depend only on `../screens`, `../helpers/app`, and `../data/testData`.
 
-**Technical Details**:
-```bash
-adb shell screenrecord /sdcard/test.mp4 &
-# Captures raw screen output at device framerate
-# Non-blocking, minimal CPU overhead
+**Layout** (`automation_test/`):
+```
+automation_test/
+├── data/
+│   └── testData.ts        # APP ids, login/registration fixtures, TITLES, MESSAGES
+├── helpers/
+│   ├── app.ts             # launchAppFresh / restartApp (terminate + activate)
+│   ├── gestures.ts        # setField, hideKeyboardIfVisible, scrollIntoView
+│   └── selectors.ts       # byTestId / byText / byTextContains / scrollToTestId
+├── screens/
+│   ├── BaseScreen.ts      # abstract page-object base (root, waitUntilLoaded, el, textOf)
+│   ├── LoginScreen.ts     # page objects, each default-exports a singleton instance
+│   ├── HomeScreen.ts
+│   ├── ForgotPasswordScreen.ts
+│   ├── RegisterScreen.ts
+│   └── index.ts           # re-exports: loginScreen, homeScreen, ...
+├── specs/
+│   ├── login.e2e.ts
+│   ├── home.e2e.ts
+│   ├── forgot-password.e2e.ts
+│   └── register.e2e.ts
+├── wdio.conf.ts           # capabilities, appium service, mocha opts, afterTest hook
+├── tsconfig.json          # @wdio/globals/types + webdriverio types
+└── screenshots/           # git-ignored, regenerated each run
 ```
 
-**File Format**:
-- MPEG-4 (MP4) video container
-- H.264 video codec
-- Typical bitrate: 4-8 Mbps
-- Resolution: Device native
-- Duration: Full test run
+**Selector mapping** — React Native `testID` → Android `resource-id`: under the UiAutomator2 driver a React Native `testID` maps to the native **`resource-id`** (exact string, no package prefix). All locator logic lives in `automation_test/helpers/selectors.ts`:
 
-### Maestro E2E Framework
-
-**Purpose**: Automate user interactions and validate app behavior
-
-**Architecture**:
-```yaml
-appId: com.example.app
----
-- launchApp              # Initialize app
-- assertVisible:         # Wait for UI element
-    id: email-input
-- tap:                   # User tap action
-    id: email-input
-- inputText: test@example.com  # Text input
-- assertVisible:         # Verify state change
-    id: email-error
-```
+- `byTestId(id)` resolves via a `resource-id` `UiSelector` on Android (works for container/`Text` nodes that set only `testID` and for inputs/buttons alike); accessibility-id (`~`) on iOS.
+- `byText(text)` / `byTextContains(text)` match visible text via XPath (Android) / predicate string (iOS).
+- `scrollToTestId(id)` uses `UiScrollable.scrollIntoView` so off-screen fields (the long Register form) can be brought into view before interaction.
 
 **Execution Model**:
-1. Connect to device via ADB
-2. Install/launch app
-3. Execute flow steps sequentially
-4. Assert conditions (wait up to 30s default)
-5. Report failures with xpath/id info
+1. Jest gate must already be green.
+2. `@wdio/appium-service` starts Appium on `127.0.0.1:4723`.
+3. WebdriverIO connects with the Android capabilities (UiAutomator2, `appPackage` `com.anonymous.reactnativeuitest`, `.MainActivity`).
+4. Each spec runs its Mocha `describe/it` cases; `beforeEach` does `launchAppFresh()` (terminate + activate) for a clean state.
+5. The `afterTest` hook saves one screenshot per test.
 
-**Integration Points**:
-- Started after Jest passes
-- Runs while ADB records
-- Results tracked separately
-- Failures don't affect recording
+### Per-test Screenshot Capture
+
+**Purpose**: Produce exactly one stable image per test as the visual-regression key
+
+**Mechanism** — the `afterTest` hook in `automation_test/wdio.conf.ts`:
+```typescript
+afterTest: async function (test) {
+  try {
+    fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
+    const file = path.join(
+      SCREENSHOT_DIR,
+      `${screenshotName(test.parent, test.title)}.png`,
+    );
+    await driver.saveScreenshot(file);
+  } catch (err) {
+    console.warn(`[afterTest] screenshot capture failed: ${(err as Error).message}`);
+  }
+}
+```
+
+**Properties**:
+- **One screenshot per test**, taken on both pass and fail.
+- **Stable, title-based naming**: `screenshotName(parent, title)` slugifies the full test title (`<describe>-<it>`) into a filesystem-safe, lower-case key. The same test always writes the same filename, which is exactly the baseline key Layer 6 diffs against.
+- **Output dir**: `automation_test/screenshots/` by default, overridable via the `APPIUM_SHOT_DIR` env var.
+- **Git-ignored & regenerated**: the directory is not committed; it is repopulated on every run. Only the baselines are tracked.
+- **Best-effort**: a capture failure logs a warning and never fails the run.
+
+This replaces the older device-recording approach (a background recorder plus media frame extraction). One stable screenshot per test = one stable visual-regression key, with none of the "which intermediate frame" flakiness.
 
 ---
 
@@ -197,13 +247,14 @@ appId: com.example.app
 
 **Example**:
 ```typescript
-describe('EmailValidator', () => {
-  it('rejects invalid emails', () => {
-    expect(validateEmail('invalid')).toBe(false);
+describe('cropTopRows', () => {
+  it('rejects a negative row count', () => {
+    expect(() => cropTopRows(buf, -1)).toThrow();
   });
-  
-  it('accepts valid emails', () => {
-    expect(validateEmail('test@example.com')).toBe(true);
+
+  it('returns a shorter image when rows > 0', () => {
+    const out = PNG.sync.read(cropTopRows(buf, 4));
+    expect(out.height).toBe(originalHeight - 4);
   });
 });
 ```
@@ -216,24 +267,25 @@ describe('EmailValidator', () => {
 
 **Example**:
 ```typescript
-describe('EmailInput Component', () => {
-  it('shows error on invalid input', () => {
-    const { getByTestId } = render(<EmailInput />);
-    fireEvent.changeText(getByTestId('email-input'), 'invalid');
-    expect(getByTestId('email-error')).toBeVisible();
+describe('Login screen', () => {
+  it('shows an inline error on invalid email', () => {
+    const { getByTestId } = render(<LoginScreen />);
+    fireEvent.changeText(getByTestId('login-email-input'), 'invalid');
+    fireEvent.press(getByTestId('login-submit-button'));
+    expect(getByTestId('login-email-error')).toBeVisible();
   });
 });
 ```
 
-**Coverage**: DOM presence, user interactions, navigation
+**Coverage**: Element presence, user interactions, navigation
 
 ### Layer 3: Snapshot Testing
 
 **Scope**: Component structure (regression detection)
 
-**File**: `__snapshots__/EmailInput-test.tsx.snap`
+**Files**: `app/__tests__/__snapshots__/*.snap`
 
-**Purpose**: Catch unintentional UI changes
+**Purpose**: Catch unintentional UI-tree changes
 
 **Update Strategy**:
 ```bash
@@ -241,119 +293,140 @@ npx jest --updateSnapshot
 # Only when intentional changes are made
 ```
 
-### Layer 4: E2E Testing (Maestro)
+### Layer 4: E2E Testing (Appium + WebdriverIO)
 
-**Scope**: Complete user flows on real device
+**Scope**: Complete user flows on a real device/emulator
 
-**Example**:
-```yaml
-- launchApp
-- assertVisible:
-    text: "Sign In"
-- tap:
-    id: email-input
-- inputText: user@example.com
-- tap:
-    id: password-input
-- inputText: password123
-- tap:
-    id: submit
-- assertVisible:
-    text: "Welcome back"
+The four specs cover the app's core auth flows:
+
+| Flow            | WDIO spec                      | What it covers                                           |
+| --------------- | ------------------------------ | -------------------------------------------------------- |
+| Login           | `specs/login.e2e.ts`           | Empty-submit validation errors; valid login → Home       |
+| Home            | `specs/home.e2e.ts`            | Welcome text on Home; logout returns to Login            |
+| Forgot password | `specs/forgot-password.e2e.ts` | Empty-submit email error; valid email → success message  |
+| Register        | `specs/register.e2e.ts`        | Per-field validation (scrolled into view); valid → Home  |
+
+**Page-object example** (`screens/LoginScreen.ts`):
+```typescript
+import { BaseScreen } from "./BaseScreen";
+import { byTestId } from "../helpers/selectors";
+import { setField } from "../helpers/gestures";
+
+class LoginScreen extends BaseScreen {
+  readonly rootTestId = "login-screen";
+
+  async fillEmail(v: string): Promise<void> {
+    await setField(byTestId("login-email-input"), v);
+  }
+  async fillPassword(v: string): Promise<void> {
+    await setField(byTestId("login-password-input"), v);
+  }
+  async submit(): Promise<void> {
+    const button = this.el("login-submit-button");
+    await button.waitForDisplayed({ timeout: 15000 });
+    await button.click();
+  }
+  async login(email: string, password: string): Promise<void> {
+    await this.fillEmail(email);
+    await this.fillPassword(password);
+    await this.submit();
+  }
+  async emailErrorText(): Promise<string> {
+    return this.textOf("login-email-error");
+  }
+}
+
+export default new LoginScreen();
 ```
 
-**Coverage**: End-to-end workflows, system integration
+**Spec example** (`specs/login.e2e.ts`):
+```typescript
+import { loginScreen, homeScreen } from "../screens";
+import { launchAppFresh } from "../helpers/app";
+import { MESSAGES, VALID_LOGIN } from "../data/testData";
 
-### Layer 5: Device Capture (ADB)
+describe("Login", () => {
+  beforeEach(async () => {
+    await launchAppFresh();
+    await loginScreen.waitUntilLoaded();
+  });
 
-**Scope**: Raw device output (visual verification, debugging)
+  it("shows inline validation errors when submitting an empty form", async () => {
+    await loginScreen.submit();
+    expect(await loginScreen.emailErrorText()).toEqual(MESSAGES.login.invalidEmail);
+    expect(await loginScreen.passwordErrorText()).toEqual(MESSAGES.login.passwordRequired);
+  });
 
-**Captured**:
-- All screen changes
-- Animations and transitions
-- Error states and dialogs
-- Performance (framerate)
+  it("navigates to Home with valid credentials", async () => {
+    await loginScreen.login(VALID_LOGIN.email, VALID_LOGIN.password);
+    await homeScreen.waitUntilLoaded();
+    await expect(homeScreen.root).toBeDisplayed();
+  });
+});
+```
+
+**Coverage**: End-to-end workflows, navigation, system integration
+
+### Layer 5: Per-test Screenshot Capture
+
+**Scope**: One stable image per E2E test (visual verification, debugging, and the Layer 6 input)
+
+**Captured**: the final rendered screen state of each test, on both pass and fail.
+
+**Where**:
+- `automation_test/screenshots/<test-title-slug>.png` (git-ignored, regenerated each run; override dir via `APPIUM_SHOT_DIR`).
 
 **Usage**:
-- Manual review of test execution
-- Debugging unexpected behavior
-- Performance analysis
-- Documentation/reporting
+- Manual review of what the app actually showed at the end of each test
+- Debugging unexpected behavior (failed tests still produce a screenshot)
+- The committed-baseline input for Layer 6 visual regression
+
+Because the filename is derived from the test title, the mapping from test → screenshot → baseline is one-to-one and stable across runs.
 
 ### Layer 6: Visual Regression (jest-image-snapshot)
 
-**Scope**: Pixel-level regression detection on ffmpeg-extracted frames
+**Scope**: Pixel-level regression detection on the per-test Appium screenshots
 
-**Why this layer exists**: Layers 1–3 catch logic / DOM / component-tree
-regressions. Layers 4–5 capture end-to-end behavior as a video. Neither
-catches *visual* regressions — a button drifting 4px, a colour token
-swap, a missing icon — because Maestro asserts on `id` / `text`, not on
-pixels. Layer 6 closes that gap by diffing extracted frames against
-committed PNG baselines, gated by the same Jest gate as Layers 1–3.
+**Why this layer exists**: Layers 1–3 catch logic / element / component-tree regressions. Layers 4–5 prove end-to-end behavior and capture a screenshot. None of them catch *visual* regressions — a button drifting 4px, a colour-token swap, a missing icon — because WebdriverIO asserts on `resource-id` / text, not on pixels. Layer 6 closes that gap by diffing each screenshot against a committed PNG baseline, gated by the same Jest gate as Layers 1–3.
 
-**Library**: [`jest-image-snapshot`](https://github.com/americanexpress/jest-image-snapshot)
-(actively maintained, pure-JS pixel diff via `pixelmatch`). Chosen over
-`react-native-owl` because it (a) extends the existing `jest-expo`
-preset rather than replacing it, (b) consumes the frames Layer 5 already
-produces instead of spinning up its own device driver, (c) doesn't
-contend with `screenrecord`/Maestro for the device (Layer 5's hazard),
-and (d) works with the managed Expo workflow with no `prebuild`.
+**Library**: [`jest-image-snapshot`](https://github.com/americanexpress/jest-image-snapshot) (actively maintained, pure-JS pixel diff via `pixelmatch`). Chosen over `react-native-owl` because it (a) extends the existing `jest-expo` preset rather than replacing it, (b) consumes the screenshots Layer 5 already produces instead of spinning up its own device driver, (c) doesn't contend with the device for the Appium session, and (d) works with the managed Expo workflow with no `prebuild`.
 
 **Files**:
 ```
 __tests__/visual/
-├── image-snapshot-matcher-test.ts     ← wiring smoke test
-├── frameUtils-test.ts                 ← unit tests for cropTopRows
-├── maestro-frames-test.ts             ← diffs Maestro frames vs baselines
+├── image-snapshot-matcher-test.ts       ← wiring smoke test
+├── frameUtils-test.ts                    ← unit tests for cropTopRows
+├── appium-screenshots-test.ts            ← diffs Appium screenshots vs baselines
 └── __image_snapshots__/
-    ├── harness-fixture-red-16.png     ← matcher contract baseline
-    └── maestro-<flow>-<frame>.png     ← per-flow per-frame baselines
+    ├── harness-fixture-red-16.png        ← matcher contract baseline
+    └── appium-<test-title>.png           ← per-test baselines
 
 lib/visual/
-└── frameUtils.ts                      ← cropTopRows + status-bar constants
+└── frameUtils.ts                         ← cropTopRows + status-bar constants
 
-jest.setup.ts                          ← registers toMatchImageSnapshot
+jest.setup.ts                             ← registers toMatchImageSnapshot
 ```
 
 **Input**:
-- `.maestro/recordings/frames/<flow>/*.png` — produced by the ffmpeg
-  frame extraction step (see "Recording Inspection" in
-  `.skills/harness-engineering/SKILL.md`).
+- `automation_test/screenshots/*.png` — produced by the `afterTest` hook (Layer 5).
 
 **Output**:
 - **Pass**: silent — baseline matched within tolerance.
-- **Fail**: Jest assertion failure + diff PNG written to
-  `__tests__/visual/__image_snapshots__/__diff_output__/<id>-diff.png`
-  (git-ignored; upload alongside the MP4 to the issue tracker).
+- **Fail**: Jest assertion failure + diff PNG written to `__tests__/visual/__image_snapshots__/__diff_output__/<id>-diff.png` (git-ignored; upload alongside the screenshot to the issue tracker).
 
-**Tolerance**: `failureThreshold: 0.02`, `failureThresholdType: 'percent'`
-— 2% pixels may differ to absorb emulator font hinting / sub-pixel drift
-between runs. Tune per flow if needed.
+**Tolerance**: `failureThreshold: 0.02`, `failureThresholdType: 'percent'` — up to 2% of pixels may differ to absorb emulator font hinting / sub-pixel drift between runs. Tune per screenshot if needed.
 
-**Status-bar masking**: Before diffing, each frame is fed through
-`cropTopRows(buf, statusBarPxFor(flow))` (default 75 px,
-overridable per flow in `maestro-frames-test.ts`). This strips the
-Android status bar — clock, battery, signal — which otherwise drifts
-every run and produces 100% false-positive diffs. The crop is applied
-to **both** the new frame and (implicitly via baseline regeneration)
-the baseline, so the regression contract is over the masked body only.
-Smoke tests cover both directions: a status-bar-only change is invisible
-(masked away) while a body-region change is detected.
+**Status-bar masking**: Before diffing, each screenshot is fed through `cropTopRows(buf, statusBarPxFor(slug))` (default `ANDROID_STATUS_BAR_PX_DEFAULT = 75`, overridable per screenshot in `appium-screenshots-test.ts` via `STATUS_BAR_PX_BY_SHOT`). This strips the Android status bar — clock, battery, signal — which otherwise drifts every run and produces 100% false-positive diffs. The crop is applied to the new screenshot, and the baseline is itself a cropped image, so the regression contract is over the masked body only. Smoke tests cover both directions: a status-bar-only change is invisible (masked away) while a body-region change is detected.
 
-**Discipline**: Diff **action-boundary frames only** (the frame right
-after each `tapOn` / `inputText` / assertion), not every `fps=1` frame.
-Intermediate frames drift in timing run-to-run and produce flaky
-failures even on a stable build.
+**Discipline**: Because there is exactly one screenshot per test (the final state), there is no "which frame" ambiguity — the per-test image *is* the diff key. Keep tests deterministic (`launchAppFresh` per test) so the captured screen is stable run-to-run.
 
 **Update strategy** (same rule as Layer 3 structural snapshots):
 ```bash
-npx jest __tests__/visual/maestro-frames-test.ts -u
+npx jest __tests__/visual/appium-screenshots-test.ts -u
 # Only after reviewing the diff PNG and confirming the visual change is intentional.
 ```
 
-**Fresh-checkout behavior**: When no frames have been extracted yet,
-`maestro-frames-test.ts` reports as a single skipped suite so CI stays
-green on PRs that don't run the device harness.
+**Fresh-checkout behavior**: When no screenshots have been captured yet, `appium-screenshots-test.ts` reports as a single skipped suite so CI stays green on PRs that don't run the device harness. Run `npm run test:appium` first to populate screenshots, then this suite engages.
 
 ---
 
@@ -382,112 +455,94 @@ START
   │   ├─ NO → EXIT (Manual intervention)
   │   └─ YES ↓
   │
-  ├─► [START RECORDING] (ADB - 1s)
-  │   ├─ adb shell screenrecord /sdcard/test.mp4 &
-  │   └─ Wait for initialization
-  │
-  ├─► [RUN MAESTRO] (Parallel - 20-30s)
-  │   ├─ maestro test .maestro/sample_test.yaml
-  │   └─ [ADB RECORDING continues in background]
-  │
-  ├─► [STOP RECORDING] (ADB - 5s)
-  │   ├─ kill screenrecord process
-  │   ├─ Pull video from device
-  │   └─ Delete remote file
-  │
-  ├─► [EXTRACT FRAMES] (ffmpeg - 1-2s)
-  │   ├─ fps=1 (or fps=1/3 for long flows)
-  │   └─ Write to .maestro/recordings/frames/<flow>/
+  ├─► [RUN APPIUM SUITE] (20-55s)
+  │   ├─ @wdio/appium-service auto-starts Appium (127.0.0.1:4723)
+  │   ├─ wdio run automation_test/wdio.conf.ts
+  │   ├─ Mocha specs drive the app via page objects
+  │   └─ afterTest saves 1 screenshot per test → screenshots/
   │
   ├─► [VISUAL REGRESSION] (Jest - 1-2s)
-  │   ├─ npx jest __tests__/visual/maestro-frames-test.ts
-  │   ├─ Diff each frame vs committed baseline
+  │   ├─ npx jest __tests__/visual/appium-screenshots-test.ts
+  │   ├─ cropTopRows() masks the Android status bar
+  │   ├─ Diff each screenshot vs committed baseline (2% threshold)
   │   └─ Write *-diff.png on failure (git-ignored)
   │
   ├─► [RESULT AGGREGATION] (2s)
   │   ├─ Parse Jest output
-  │   ├─ Verify video file
-  │   ├─ Check Maestro results
+  │   ├─ Verify screenshots exist
+  │   ├─ Check WDIO spec-reporter results
   │   └─ Combine metadata
   │
   ├─► [ISSUE CREATION] (Optional - 3s)
   │   ├─ Create/update issue
   │   ├─ Document results
-  │   └─ Attach video
+  │   └─ Attach screenshot(s) + diff PNG(s)
   │
-  └─► END (Total: 45-60s)
+  └─► END (Total: 35-70s)
 ```
 
 ### Timing Analysis
 
-| Phase | Duration | Parallelizable |
-|-------|----------|---|
-| Jest | 1-2s | No (gate) |
-| Device check | ~1s | Sequential |
-| ADB start | ~1s | Yes (with Maestro) |
-| Maestro | 20-30s | Yes (with ADB) |
-| ADB stop/pull | 5s | Sequential |
-| ffmpeg frame extract | 1-2s | Sequential |
-| Visual regression (Jest) | 1-2s | Sequential (post-frames) |
-| Result aggregation | 2s | Sequential |
-| **Total** | **48-65s** | ~30s saved via parallelization |
+| Phase | Duration | Notes |
+|-------|----------|-------|
+| Jest (unit + UI + snapshots) | 1-2s | Gate — must pass first |
+| Device check | ~1s | `adb devices` |
+| Appium auto-start | ~3s | `@wdio/appium-service` |
+| Appium suite (4 specs) | 20-55s | Per-test screenshot via `afterTest` |
+| Visual regression (Jest) | 1-2s | Crop + pixel diff vs baselines |
+| Result aggregation | 2s | Parse + combine metadata |
+| **Total** | **~30-65s** | Two clean stages, no media post-processing |
 
-**Without parallelization**: ~70s  
-**With ADB + Maestro parallel**: ~45s  
-**Savings**: 35% faster execution
+The pipeline is a deterministic two-stage handoff (drive → diff) rather than a racing recorder; there is no separate stop/pull/extract phase, so there is less to go wrong and nothing to clean up off-device.
 
 ---
 
-## Device Recording Strategy
+## Screenshot Strategy
 
-### Why ADB Over Maestro Recording?
+### One Screenshot Per Test
 
-**Maestro `record` mode**:
-- Interactive flow creation tool (Maestro Studio)
-- Designed for developers creating tests
-- Blocking operation (stops during recording)
-- High overhead (~20-30% CPU)
+The harness captures exactly **one screenshot per E2E test**, on both pass and fail, in the `afterTest` hook. This is the unit of visual evidence:
 
-**ADB `screenrecord`**:
-- Device-level capture (like Android device recording)
-- Works with any app/automation tool
-- Non-blocking background process (~2-5% CPU)
-- Parallel with other testing
+- It is the screen state at the end of the test — the moment that matters for verifying the assertion.
+- It is taken even on failure, so a red test still leaves an inspectable image.
+- It is the single, unambiguous input to Layer 6 (no "which frame" decision).
 
-### Recording Architecture
+### Stable, Title-Based Naming
+
+`screenshotName(test.parent, test.title)` slugifies the full test title (`<describe>-<it>`) into a filesystem-safe, lower-case key:
 
 ```
-Device Screen
-    ↓
-ADB screenrecord
-    ↓
-H.264 encoding
-    ↓
-MP4 container
-    ↓
-.maestro/recordings/TIMESTAMP-flow.mp4
+"Login" + "navigates to Home with valid credentials"
+  → login-navigates-to-home-with-valid-credentials.png
 ```
 
-### File Management
+The same test always writes the same filename, and the Layer 6 baseline key is `appium-<that-slug>.png`. The mapping test → screenshot → baseline is therefore one-to-one and stable.
 
-**Naming Convention**:
+### Status-Bar Crop Before Diff
+
+Raw Android screenshots include the status bar (clock, battery, signal), which drifts every run. Before any diff, `cropTopRows(buf, ANDROID_STATUS_BAR_PX_DEFAULT)` (default 75px) removes the top rows. Crop (not blackout) is chosen because it shrinks the diff surface, keeps baselines smaller, and makes "did the mask take effect" obvious from baseline image dimensions.
+
+### Where Files Go
+
 ```
-.maestro/recordings/
-  20260516-003545-sample_test.mp4
-  ├─ YYYYMMDD: Date (ISO 8601)
-  ├─ HHMMSS: Time (24-hour UTC)
-  └─ flow-name: Test flow identifier
+automation_test/screenshots/                       ← git-ignored, regenerated each run
+  login-navigates-to-home-with-valid-credentials.png
+  home-logout-returns-to-login.png
+  ...
+
+__tests__/visual/__image_snapshots__/              ← committed baselines
+  appium-login-navigates-to-home-with-valid-credentials.png
+  ...
+  __diff_output__/                                  ← git-ignored, only on failure
+    appium-...-diff.png
 ```
 
-**Storage**:
-- Local: `.maestro/recordings/` (for CI/CD)
-- Optional: Issue attachments (if tracking configured)
-- Optional: Cloud storage (GCS, S3, etc.)
+### Git-Ignored & Regenerated vs Committed Baselines
 
-**Retention**:
-- Keep for: Post-test analysis, debugging
-- Rotate: Monthly or after X runs
-- Compression: None (raw MP4)
+- **Screenshots** (`automation_test/screenshots/`) are git-ignored and regenerated on every run. Never committed.
+- **Diff output** (`__diff_output__/`) is git-ignored; it appears only when a diff fails.
+- **Baselines** (`__tests__/visual/__image_snapshots__/appium-*.png`) **are** committed. They are the source of truth and change only via an intentional `-u` update after the diff PNG has been reviewed.
+- Override the screenshot output directory (e.g. in CI) with `APPIUM_SHOT_DIR`.
 
 ---
 
@@ -522,17 +577,25 @@ MP4 container
 │  └──────────────────────────────┘   │
 │           ↓                          │
 │  ┌──────────────────────────────┐   │
-│  │ 4. E2E TESTS (Flows)         │   │
+│  │ 4. E2E TESTS (Appium+WDIO)   │   │
 │  │ • Complete user journeys     │   │
 │  │ • Cross-component flows      │   │
 │  │ • System integration         │   │
 │  └──────────────────────────────┘   │
 │           ↓                          │
 │  ┌──────────────────────────────┐   │
-│  │ 5. DEVICE RECORDING (Debug)  │   │
-│  │ • Visual verification        │   │
-│  │ • Performance observation    │   │
-│  │ • State inspection           │   │
+│  │ 5. SCREENSHOT CAPTURE        │   │
+│  │ • 1 PNG per test (pass/fail) │   │
+│  │ • Stable title-based naming  │   │
+│  │ • Visual evidence + Layer-6  │   │
+│  │   input                      │   │
+│  └──────────────────────────────┘   │
+│           ↓                          │
+│  ┌──────────────────────────────┐   │
+│  │ 6. VISUAL REGRESSION         │   │
+│  │ • Status-bar crop            │   │
+│  │ • Pixel diff vs baseline     │   │
+│  │ • Fails the Jest gate        │   │
 │  └──────────────────────────────┘   │
 │                                      │
 └──────────────────────────────────────┘
@@ -540,7 +603,7 @@ MP4 container
 
 ### Quality Gates
 
-**Gate 1: Unit Tests**
+**Gate 1: Unit/UI/Snapshot Tests**
 ```
 Condition: All unit/UI/snapshot tests pass
 Failure: Stop, report errors
@@ -549,22 +612,29 @@ Success: Continue to device check
 
 **Gate 2: Device Connection**
 ```
-Condition: `adb devices` shows at least one device
+Condition: `adb devices` shows at least one online device
 Failure: Stop, user must connect device/emulator
-Success: Continue to E2E testing
+Success: Continue to Appium E2E
 ```
 
-**Gate 3: Recording Success**
+**Gate 3: Screenshot Capture**
 ```
-Condition: MP4 file exists and size > 0
-Failure: Log warning, continue (data loss only)
-Success: Proceed to result aggregation
+Condition: afterTest writes a PNG per test
+Failure: Logged warning only — never fails the run (data loss only)
+Success: Screenshots available for Layer 6
+```
+
+**Gate 4: Visual Regression**
+```
+Condition: Each screenshot matches its baseline within 2% pixel tolerance
+Failure: Jest assertion fails; diff PNG written for review
+Success: No visual regression — proceed to result aggregation
 ```
 
 ### Metrics & Reporting
 
 **Test Results**:
-- Total tests run
+- Total tests run (Jest + WebdriverIO)
 - Passed / Failed count
 - Pass rate (%)
 - Execution time
@@ -572,13 +642,13 @@ Success: Proceed to result aggregation
 **Coverage**:
 - Unit test coverage (%)
 - Component test coverage (%)
-- Flow test coverage (%)
+- E2E flow coverage (4 flows: login, home, forgot-password, register)
 
-**Device Recording**:
-- File size (MB)
-- Duration (seconds)
-- Framerate (fps)
-- Codec used
+**Visual Regression**:
+- Screenshots captured (count)
+- Baselines matched / failed
+- Pixel-diff percentage per failing screenshot
+- Status-bar crop applied (px)
 
 ---
 
@@ -586,61 +656,79 @@ Success: Proceed to result aggregation
 
 ### Setup
 
-#### 1. Install Dependencies
+#### 1. Install Node Dependencies
 
 ```bash
 npm install
 ```
 
-#### 2. Configure Maestro
+This pulls the E2E stack: `webdriverio`, `@wdio/cli`, `@wdio/local-runner`, `@wdio/mocha-framework`, `@wdio/appium-service`, `@wdio/spec-reporter`, and `tsx`.
+
+#### 2. Install Appium + the UiAutomator2 Driver
 
 ```bash
-# Install maestro CLI
-brew install mobile-dev-tools/tap/maestro  # macOS
-# or: choco install maestro  # Windows
-# or: apt install maestro  # Linux
+# Install Appium 3 globally
+npm i -g appium
+
+# Install the Android driver
+appium driver install uiautomator2
 
 # Verify
-maestro --version
+appium --version
+appium driver list --installed
 ```
+
+You do **not** start Appium manually — `@wdio/appium-service` auto-starts it from `PATH` when the run begins.
 
 #### 3. Setup Device/Emulator
 
 ```bash
-# Start emulator
-emulator -avd Nexus_5X_API_30 &
+# Start the emulator (AVD Pixel_9a already exists)
+emulator -avd Pixel_9a &
 
-# Or connect physical device via USB
+# Or connect a physical device via USB
 
 # Verify
 adb devices
 # Output should show: device | emulator-5554
 ```
 
+#### 4. Build & Install the App
+
+This is a **managed Expo project** with no committed `android/` folder, so the native app must be prebuilt before it can be installed:
+
+```bash
+# From the repo ROOT — generates native code, builds, installs, and launches:
+npx expo run:android
+```
+
+This installs `com.anonymous.reactnativeuitest` on the running device. Alternatively, set `APP_PATH` to an `.apk` and the runner will install it for you.
+
 ### Running Tests
 
 #### Full Harness (Recommended)
 
 ```bash
-npm test
-```
+# 1) Jest gate (unit + UI + snapshots)
+npx jest --watchAll=false
 
-This executes the complete pipeline:
-1. Jest (unit + UI + snapshots)
-2. ADB recording (parallel)
-3. Maestro E2E flows
-4. Result aggregation
+# 2) Appium E2E — captures one screenshot per test
+npm run test:appium        # = wdio run automation_test/wdio.conf.ts
+
+# 3) Visual regression — diff screenshots vs baselines
+npx jest __tests__/visual/appium-screenshots-test.ts
+```
 
 #### Individual Layers
 
-**Unit Tests Only**:
+**Unit / UI / Snapshots**:
 ```bash
 npx jest --watchAll=false
 ```
 
-**UI Tests Only**:
+**A single test file**:
 ```bash
-npx jest components/__tests__/EmailInput-test.tsx --watchAll=false
+npx jest app/__tests__/login-screen-test.tsx --watchAll=false
 ```
 
 **With Coverage**:
@@ -648,124 +736,173 @@ npx jest components/__tests__/EmailInput-test.tsx --watchAll=false
 npx jest --coverage --watchAll=false
 ```
 
-**Update Snapshots**:
+**Update Structural Snapshots**:
 ```bash
 npx jest --updateSnapshot
 ```
 
-**Maestro Flows Only**:
+**Appium E2E Only**:
 ```bash
-maestro test .maestro/sample_test.yaml
+npm run test:appium
+# or directly:
+npx wdio run automation_test/wdio.conf.ts
 ```
 
-**With Manual Recording**:
+**Override device / app / screenshot dir** (all optional, sensible defaults):
 ```bash
-FLOW=".maestro/sample_test.yaml"
-BASENAME="$(basename "$FLOW" .yaml)"
-STAMP="$(date +%Y%m%d-%H%M%S)"
-LOCAL=".maestro/recordings/${STAMP}-${BASENAME}.mp4"
-REMOTE="/sdcard/maestro-${STAMP}.mp4"
+APP_PATH=/abs/path/to/app.apk DEVICE_NAME=Pixel_9a \
+  npx wdio run automation_test/wdio.conf.ts
 
-mkdir -p .maestro/recordings
-adb shell screenrecord "$REMOTE" &
-sleep 2
-maestro test "$FLOW"
-kill $!
-sleep 2
-adb pull "$REMOTE" "$LOCAL"
-adb shell rm -f "$REMOTE"
-echo "✅ Recording: $LOCAL"
+APPIUM_SHOT_DIR=/tmp/shots npm run test:appium
 ```
+
+**Update Visual Baselines** (after reviewing the diff PNG):
+```bash
+npx jest __tests__/visual/appium-screenshots-test.ts -u
+```
+
+### Typecheck
+
+The root `tsconfig.json` **excludes** `automation_test/` (the Appium suite has its own `tsconfig.json` with the WebdriverIO/Mocha globals), so there are two typecheck commands:
+
+```bash
+# App + Jest layers:
+npx tsc --noEmit
+
+# Appium suite (WDIO globals):
+npx tsc -p automation_test/tsconfig.json --noEmit
+```
+
+Both are green.
 
 ---
 
 ## Troubleshooting & Diagnostics
 
-### Issue: Device Not Connected
+### Issue: Appium Session Won't Start
 
-**Symptom**: `adb devices` shows empty list
+**Symptom**: WebdriverIO errors connecting to `127.0.0.1:4723`, "could not find a driver", or the session never initializes.
 
 **Diagnosis**:
 ```bash
-# Check daemon
-adb kill-server
-adb start-server
+# Is the driver installed?
+appium driver list --installed   # expect uiautomator2
 
-# List devices
-adb devices
+# Is the Appium binary on PATH? (@wdio/appium-service needs it)
+which appium
+appium --version
 
-# Check emulator
-adb emu avd name
+# Is anything already bound to 4723?
+adb devices                       # device must be online first
 ```
 
 **Solution**:
-- Start emulator: `emulator -avd <name>`
-- Connect physical device via USB
-- Enable USB debugging in device settings
-- Run: `adb kill-server && adb devices`
+- Install the driver: `appium driver install uiautomator2`.
+- Make sure `appium` is on `PATH` so `@wdio/appium-service` can launch it.
+- Ensure a device/emulator is **online** before the run (see next issue).
+
+### Issue: `adb devices` Is Empty
+
+**Symptom**: `adb devices` shows no devices, or a device stuck in `offline`/`unauthorized`.
+
+**Diagnosis**:
+```bash
+adb kill-server
+adb start-server
+adb devices
+adb emu avd name        # confirm an emulator is up
+```
+
+**Solution**:
+- Start the emulator: `emulator -avd Pixel_9a`.
+- Connect a physical device via USB and enable USB debugging.
+- For `unauthorized`, accept the RSA prompt on the device.
+- Re-run: `adb kill-server && adb devices`.
+
+### Issue: App Not Installed
+
+**Symptom**: Appium fails to activate `com.anonymous.reactnativeuitest`, or the launch activity is not found.
+
+**Diagnosis**:
+```bash
+# Is the package installed?
+adb shell pm list packages | grep reactnativeuitest
+```
+
+**Solution**:
+- This is a managed Expo project (no committed `android/`). Build and install with:
+  ```bash
+  npx expo run:android
+  ```
+- Or pass a prebuilt APK via `APP_PATH=/abs/path/to/app.apk` so Appium installs it before the run.
+
+### Issue: Element Not Found
+
+**Symptom**: A page-object call times out waiting for an element (`waitForDisplayed` / "element not found").
+
+**Diagnosis**:
+```bash
+# Confirm the app is foregrounded
+adb shell dumpsys activity activities | grep -i resumed
+
+# Device logs
+adb logcat | grep -i reactnativeuitest
+```
+
+**Solution**:
+- Verify the `testID` exists in the component and matches the page object (e.g. `login-email-input`, `login-submit-button`). On Android the `testID` becomes the native `resource-id`.
+- For an off-screen field (the long Register form), use the page object's scroll helper — `scrollIntoView(testId)` / `scrollToTestId(id)` resolves a `UiScrollable.scrollIntoView` selector — before interacting.
+- Increase the per-element timeout in the page object (`waitForDisplayed({ timeout: ... })`) if the screen is slow to render.
+- Rebuild/reinstall the app if the component changed: `npx expo run:android`.
+
+### Issue: Screenshot Capture Fails
+
+**Symptom**: `[afterTest] screenshot capture failed: ...` in the run log, or a screenshot is missing.
+
+**Diagnosis & behavior**:
+- The `afterTest` hook is wrapped in try/catch — it **logs a warning and never fails the run**. A missing screenshot only means that test won't be diffed by Layer 6 this run.
+```bash
+# Confirm the output dir and check what was written
+ls automation_test/screenshots/
+echo "$APPIUM_SHOT_DIR"     # if you overrode the location
+```
+
+**Solution**:
+- Ensure the session is still alive when `afterTest` runs (a crashed/closed driver can't screenshot).
+- Confirm the process can write to `automation_test/screenshots/` (or your `APPIUM_SHOT_DIR`).
+- Re-run the suite; screenshots are regenerated every run.
+
+### Issue: Visual Regression Fails
+
+**Symptom**: `npx jest __tests__/visual/appium-screenshots-test.ts` reports a `toMatchImageSnapshot` failure.
+
+**Diagnosis**:
+```bash
+# Inspect the generated diff
+ls __tests__/visual/__image_snapshots__/__diff_output__/
+```
+
+**Solution**:
+- Open the `*-diff.png` and decide: real regression vs intended change.
+- If the change is intentional, update the baseline: `npx jest __tests__/visual/appium-screenshots-test.ts -u`.
+- If a different emulator profile changed the status-bar height, add a per-screenshot override in `STATUS_BAR_PX_BY_SHOT` in `appium-screenshots-test.ts`.
+- If no screenshots exist yet, the suite skips — run `npm run test:appium` first.
 
 ### Issue: Jest Tests Fail
 
-**Symptom**: Red test output, errors shown
+**Symptom**: Red test output, errors shown.
 
 **Diagnosis**:
 ```bash
-# Run with verbose output
 npx jest --verbose --watchAll=false
-
-# Check test file directly
-npx jest components/__tests__/EmailInput-test.tsx --watchAll=false
+npx jest app/__tests__/login-screen-test.tsx --watchAll=false
 ```
 
 **Solution**:
-- Read error message carefully
-- Update snapshots if intentional: `npm test -- -u`
-- Mock external dependencies if needed
-- Check `testID` values match component
-
-### Issue: Maestro Flow Fails
-
-**Symptom**: "Element not found" or timeout
-
-**Diagnosis**:
-```bash
-# Check app is running
-adb shell am stack list
-
-# View device logs
-adb logcat | grep maestro
-
-# Manual check
-adb shell dumpsys activity | grep NAME
-```
-
-**Solution**:
-- Increase timeout: `assertVisible: {id: x, timeout: 60000}`
-- Verify testID exists in component
-- Check element visibility on device
-- Rebuild app if changed: `npm run android`
-
-### Issue: Recording Is Empty or Missing
-
-**Symptom**: MP4 file not found or 0 bytes
-
-**Diagnosis**:
-```bash
-# Check device storage
-adb shell ls -lh /sdcard/maestro-*.mp4
-
-# Check permissions
-adb shell stat /sdcard/
-
-# Monitor recording process
-adb shell ps | grep screenrecord
-```
-
-**Solution**:
-- Ensure device has free storage: `adb shell df /sdcard`
-- Verify screenrecord started: check process list
-- Increase duration: `adb shell screenrecord --time-limit=120 /sdcard/test.mp4`
-- Check device logs for errors: `adb logcat | grep screenrecord`
+- Read the error carefully.
+- Update structural snapshots if intentional: `npx jest -u`.
+- Mock external dependencies if needed.
+- Check `testID` values match the component.
 
 ### Diagnostic Commands
 
@@ -775,19 +912,19 @@ adb shell getprop ro.build.version.release
 adb shell getprop ro.product.model
 
 # App info
-adb shell pm list packages | grep example
+adb shell pm list packages | grep reactnativeuitest
 
 # Memory/CPU
 adb shell top -n 1 | head -20
 
-# Network
-adb shell netstat
+# Foreground activity
+adb shell dumpsys activity activities | grep -i resumed
 
-# Test execution logs
-npm test 2>&1 | tee test-log.txt
+# Jest execution logs
+npx jest --watchAll=false 2>&1 | tee test-log.txt
 
-# Maestro debug
-maestro test --log .maestro/sample_test.yaml
+# Appium suite logs
+npm run test:appium 2>&1 | tee appium-log.txt
 ```
 
 ---
@@ -798,29 +935,30 @@ maestro test --log .maestro/sample_test.yaml
 
 1. **Use testID for assertions**
    ```typescript
-   <TextInput testID="email-input" />
+   <TextInput testID="login-email-input" />
    ```
+   The same `testID` is the native `resource-id` Appium locates on Android.
 
 2. **Avoid implementation details**
    ```typescript
    // Good
-   fireEvent.changeText(getByTestId('email-input'), 'test@example.com');
-   
+   fireEvent.changeText(getByTestId('login-email-input'), 'test@example.com');
+
    // Bad
    fireEvent.changeText(getByDisplayValue('old@example.com'), 'test@example.com');
    ```
 
-3. **Clear error states**
+3. **Clear error states with their own testID**
    ```typescript
-   {showError && <Text testID="email-error">Invalid email</Text>}
+   {showError && <Text testID="login-email-error">Enter a valid email address</Text>}
    ```
 
 ### Writing Reliable Tests
 
-1. **Wait for elements**
+1. **Wait for elements (RNTL)**
    ```typescript
    await waitFor(() => {
-     expect(getByTestId('email-error')).toBeVisible();
+     expect(getByTestId('login-email-error')).toBeVisible();
    });
    ```
 
@@ -831,108 +969,102 @@ maestro test --log .maestro/sample_test.yaml
    }));
    ```
 
-3. **Clean up after tests**
+3. **Reset app state per E2E test**
    ```typescript
-   afterEach(() => {
-     jest.clearAllMocks();
+   beforeEach(async () => {
+     await launchAppFresh();          // terminate + activate → clean state
+     await loginScreen.waitUntilLoaded();
    });
    ```
 
-### Recording & Analysis
+### Screenshots & Visual Analysis
 
-1. **Review recordings regularly**
-   - Watch for unexpected behavior
-   - Check performance/framerate
-   - Verify error handling
+1. **Review failing-test screenshots**
+   - Every test (pass or fail) leaves a PNG in `automation_test/screenshots/`.
+   - On a failure, read that image to see exactly what the app showed.
 
-2. **Store recordings with metadata**
+2. **Review diff PNGs before updating baselines**
+   - A visual-regression failure writes `__diff_output__/<id>-diff.png`.
+   - Only run `-u` after confirming the change is intentional.
+
+3. **Attach evidence to the tracker**
    ```
-   Recording: 20260516-003545-sample_test.mp4
-   Metadata:
-   - Device: emulator-5554
-   - Flow: sample_test.yaml
-   - Result: PASS
-   - Size: 1.6 MB
+   Test: Login → navigates to Home with valid credentials
+   - Device: Pixel_9a (emulator)
+   - E2E: PASS
+   - Screenshot: login-navigates-to-home-with-valid-credentials.png
+   - Visual regression: baseline matched (0.0% diff)
    ```
-
-3. **Archive for compliance**
-   - Keep 30 days minimum
-   - Rotate monthly
-   - Document test results
 
 ---
 
 ## Architecture Decisions
 
-### Why Parallel ADB + Maestro?
+### Why Per-test Screenshots Over Video Recording?
 
-**Sequential** (Bad):
-```
-ADB Record (30s) → Maestro (25s) → Total: 55s
-```
+**Video recording + frame extraction** (the previous approach):
+- Required a background recorder racing the test, then a media-extraction step.
+- Forced a "which intermediate frame do we diff?" decision — frames drift in timing run-to-run, producing flaky diffs even on a stable build.
+- Added an external media dependency and off-device cleanup.
 
-**Parallel** (Good):
-```
-[ADB Recording] ═════════════════
-[Maestro Test] ═════════════════
-Total: 35s (38% faster)
-```
+**Per-test screenshot capture** (current):
+- One deterministic image per test, taken at the end state that matters.
+- A stable, title-based filename = a stable visual-regression key (no frame ambiguity).
+- No external media tooling, no background process, nothing to pull/clean off-device.
 
 ### Why Multiple Test Layers?
 
 - **Unit**: Fast feedback (broken logic)
 - **UI**: Integration check (broken rendering)
 - **Snapshots**: Regression detection (broken structure)
-- **E2E**: System validation (broken workflows)
-- **Recording**: Visual proof (broken behavior)
+- **E2E (Appium)**: System validation (broken workflows)
+- **Screenshot**: Visual evidence (what the device actually showed)
+- **Visual regression**: Pixel-level proof (drift the E2E asserts can't see)
 
-Each layer catches different classes of bugs.
+Each layer catches a different class of bug.
 
-### Why ADB Over Alternatives?
+### Why Appium + WebdriverIO + the Page-Object Model?
 
-**UIAutomator**: Android-only, limited to inspecting UI  
-**Maestro record**: Interactive tool, high overhead  
-**FFmpeg**: External dependency, complex setup  
-**ADB screenrecord**: Built-in, low overhead, universal  
-
-ADB balances simplicity, performance, and universality.
+- **Appium / UiAutomator2**: drives the real Android runtime, mapping React Native `testID` → native `resource-id`.
+- **WebdriverIO + Mocha + tsx**: TypeScript specs with no build step; the `spec` reporter gives readable output.
+- **Page objects**: raw selectors live in `helpers/selectors.ts` and screens; specs read like prose and survive UI refactors.
+- **`@wdio/appium-service`**: zero-touch server lifecycle — no manual Appium process to babysit.
 
 ---
 
 ## Extensibility
 
-### Adding New Test Flows
+### Adding a New E2E Flow
 
-```yaml
-# .maestro/checkout_test.yaml
-appId: com.example.app
----
-- launchApp
-- assertVisible: {id: product-list}
-- tap: {id: product-0}
-- assertVisible: {id: product-detail}
-- tap: {id: add-to-cart}
-- tap: {id: checkout}
-- assertVisible: {id: payment-form}
-```
+1. Add a page object in `automation_test/screens/`:
+   ```typescript
+   import { BaseScreen } from "./BaseScreen";
+   class CheckoutScreen extends BaseScreen {
+     readonly rootTestId = "checkout-screen";
+     async addToCart(): Promise<void> {
+       const btn = this.el("add-to-cart");
+       await btn.waitForDisplayed({ timeout: 15000 });
+       await btn.click();
+     }
+   }
+   export default new CheckoutScreen();
+   ```
+2. Re-export it from `screens/index.ts`.
+3. Add a spec `automation_test/specs/checkout.e2e.ts` that depends only on `../screens`, `../helpers/app`, `../data/testData`.
+4. Run `npm run test:appium` — the `afterTest` hook captures a screenshot per new test.
+5. Run `npx jest __tests__/visual/appium-screenshots-test.ts -u` once to commit the new baselines.
 
 ### Adding Coverage Reports
 
 ```bash
-# Generate HTML report
 npx jest --coverage --watchAll=false
-
-# Results: coverage/lcov-report/index.html
 open coverage/lcov-report/index.html
 ```
 
 ### Custom Result Aggregation
 
 ```bash
-# Parse results into JSON
 npx jest --json > test-results.json
-
-# Process with custom script
 node scripts/aggregate-results.js test-results.json
 ```
 
@@ -942,15 +1074,18 @@ node scripts/aggregate-results.js test-results.json
 
 - [Jest Documentation](https://jestjs.io/docs/getting-started)
 - [React Native Testing Library](https://callstack.github.io/react-native-testing-library/)
-- [Maestro Framework](https://maestro.mobile.dev/getting-started)
+- [Appium](https://appium.io/docs/en/latest/)
+- [Appium UiAutomator2 Driver](https://github.com/appium/appium-uiautomator2-driver)
+- [WebdriverIO](https://webdriver.io/)
+- [jest-image-snapshot](https://github.com/americanexpress/jest-image-snapshot)
 - [ADB Documentation](https://developer.android.com/tools/adb)
 - [Expo CLI](https://docs.expo.dev/more/expo-cli/)
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: 2026-05-16  
-**Audience**: Engineering teams implementing React Native harness engineeringes
+**Document Version**: 2.0
+**Last Updated**: 2026-05-31
+**Audience**: Engineering teams implementing React Native harness engineering
 
 ---
 
@@ -980,9 +1115,9 @@ Agents learn through feedback. A well-designed harness provides clear signals:
 ```
 Agent generates code
     ↓
-Harness runs: Unit → UI → Snapshots → Recording → E2E
+Harness runs: Unit → UI → Snapshots → Appium E2E → Screenshot → Visual Diff
     ↓
-Result: ✅ PASS or ❌ FAIL with exact error
+Result: ✅ PASS or ❌ FAIL with exact error (+ diff PNG)
     ↓
 Agent analyzes failure and refines code
     ↓
@@ -1000,25 +1135,27 @@ Multiple test layers catch different bug classes:
 | Unit Tests | Logic errors | ⭐⭐⭐⭐⭐ |
 | UI Tests | Integration bugs | ⭐⭐⭐⭐⭐ |
 | Snapshots | Structural regressions | ⭐⭐⭐⭐ |
-| Device Recording | Behavioral anomalies | ⭐⭐⭐⭐ |
-| E2E Tests | Complete flow failures | ⭐⭐⭐⭐⭐ |
+| Appium E2E | Complete flow failures | ⭐⭐⭐⭐⭐ |
+| Screenshot Capture | Visual evidence | ⭐⭐⭐⭐ |
+| Visual Regression | Pixel-level drift | ⭐⭐⭐⭐⭐ |
 
-All five layers → agent can confidently iterate.
+All layers → agent can confidently iterate.
 
 #### 4. **Reproducibility & Trust**
 
-Device recordings prove actual behavior (not theoretical):
+Screenshots and pixel diffs prove actual behavior (not theoretical):
 
 ```
 Test Output:
-  ✅ Unit: 6/6 passed
-  ✅ UI: All assertions passed
-  ✅ Snapshot: No changes
-  ✅ Recording: TIMESTAMP-flow.mp4 (1.6 MB)
-  ✅ E2E: Flow completed successfully
+  ✅ Unit: passed
+  ✅ UI: all assertions passed
+  ✅ Snapshot: no changes
+  ✅ Appium E2E: 4 flows completed successfully
+  ✅ Screenshots: 1 PNG per test captured
+  ✅ Visual regression: all baselines matched (≤2% diff)
 ```
 
-Agent sees: "I can trust this code works. Device actually ran it."
+Agent sees: "I can trust this code works. The device actually ran it *and the pixels match*."
 
 #### 5. **Speed at Scale**
 
@@ -1035,9 +1172,10 @@ The speed difference compounds: 10 iterations = 20-40 hours vs 50-100 minutes.
 
 When code is AI-generated:
 1. Don't trust the logic (test it)
-2. Don't trust the UI (record it)
-3. Don't trust the flow (automate it)
-4. Don't skip layers (all five matter)
+2. Don't trust the UI (render it, then screenshot it)
+3. Don't trust the flow (automate it with Appium)
+4. Don't trust a green log (diff the pixels against a baseline)
+5. Don't skip layers (all six matter)
 
 #### Implementation Pattern
 
@@ -1046,7 +1184,7 @@ When code is AI-generated:
 while not done:
     code = agent.generate(requirements)
     result = harness.run(code)  # ← Critical
-    
+
     if result.all_pass:
         done = True
     else:
@@ -1055,27 +1193,31 @@ while not done:
 
 #### What Makes a Good Harness for AI?
 
-1. **Fast**: Under 1 minute per run (agents iterate quickly)
-2. **Reliable**: Same code = same results (deterministic)
-3. **Clear**: Pass/fail signals (agents understand errors)
+1. **Fast**: Roughly a minute per run (agents iterate quickly)
+2. **Reliable**: Same code = same results (deterministic — one screenshot per test, no frame lottery)
+3. **Clear**: Pass/fail signals + diff PNGs (agents understand errors)
 4. **Comprehensive**: All layers (catches diverse bugs)
-5. **Traceable**: Recordings + logs (agents learn from history)
+5. **Traceable**: Screenshots + logs (agents learn from history)
 
 This project's harness satisfies all five criteria.
 
-### Real-World Example: EmailInput Component
+### Real-World Example: Login Screen
 
 ```
 Iteration 1:
-  Agent: "Generate email input component with validation"
+  Agent: "Add email validation to the login screen"
   Harness: ❌ FAIL - Unit test fails (regex invalid)
   Agent: "Fix regex pattern"
-  
+
 Iteration 2:
-  Harness: ✅ PASS - All tests pass
+  Harness: ❌ FAIL - Visual regression (error text shifted layout 6px)
+  Agent: "Reserve space for the error row"
+
+Iteration 3:
+  Harness: ✅ PASS - All layers pass, baselines match
   Agent: "Component is ready"
-  
-Result: Correct code in 2 iterations (~10 minutes)
+
+Result: Correct code in 3 iterations (~15 minutes)
 Without harness: Would require human testing (30+ minutes)
 ```
 
@@ -1089,68 +1231,64 @@ Without harness: Would require human testing (30+ minutes)
 1. Testing infrastructure = Code infrastructure (equal importance)
 2. Agentic systems need deterministic feedback loops
 3. Multiple test layers catch different bug classes
-4. Device recording provides ground truth
+4. Screenshots + pixel diffs provide ground truth
 5. Fast iteration requires automated verification
 
 ---
 
-## Recording Inspection & Failure Diagnosis
+## Screenshot Inspection & Failure Diagnosis
 
-A green Maestro log is **not** sufficient evidence. The recording is the source of truth, and the recording is verified by reading **frames** — an `.mp4` cannot be "watched" by a coding agent, but extracted PNG frames can be read.
+A green WebdriverIO log is **not** sufficient evidence. The per-test screenshot is the source of truth, and it is both **read** (by a human or agent) and **diffed** against a committed baseline by Layer 6.
 
-### Extract frames with ffmpeg
+### Where the screenshots are
+
+Each test writes one PNG, named by its full title, into `automation_test/screenshots/` (override with `APPIUM_SHOT_DIR`). They are git-ignored and regenerated every run:
 
 ```bash
-LOCAL=".maestro/recordings/<timestamp>-<flow>.mp4"
-FRAMES="/tmp/maestro-frames/$(basename "$LOCAL" .mp4)"
-mkdir -p "$FRAMES"
-
-# 1 frame/second — fine-grained, good for short flows (<~60s)
-ffmpeg -loglevel error -y -i "$LOCAL" -vf fps=1 "$FRAMES/frame_%03d.png"
-
-# 1 frame every 3 seconds — lighter sweep for long flows
-# ffmpeg -loglevel error -y -i "$LOCAL" -vf fps=1/3 "$FRAMES/frame_%03d.png"
+ls automation_test/screenshots/
+# login-shows-inline-validation-errors-when-submitting-an-empty-form.png
+# login-navigates-to-home-with-valid-credentials.png
+# ...
 ```
 
-`frame_NNN.png` corresponds to roughly second `NNN` of the run, so frames line up with the timestamped Maestro log. Read a spread across the run **plus the frame at each action boundary** (right after each `inputText`, `tapOn`, assertion, navigation) — the meaningful moments — instead of every frame. Confirm: validation errors with exact text, success/empty states, the correct screen, and **no redbox or ANR dialog**.
-
-> ⚠️ Capture the video with `adb screenrecord` only. Do **not** run a parallel `adb screencap` sampling loop during the flow — on weaker emulators the combined load (record + per-second capture + Maestro polling) makes the app ANR mid-run. Always derive frames from the saved recording afterward.
+Read the image for the failing (or suspicious) test to confirm: validation errors with exact text, success/empty states, the correct screen, and **no redbox or ANR dialog**.
 
 ### When a flow fails
 
-1. **Locate the failing step** — the last `COMPLETED` line, then the `FAILED` line in the Maestro output.
-2. **Read frames action-by-action** around that timestamp to see the actual screen state at the moment of failure.
-3. **Check Maestro debug artifacts** at `~/.maestro/tests/<timestamp>/` — failure screenshot, `maestro.log`, and the commands JSON.
-4. **Fix, re-run, re-inspect.** Treat a run with any ANR/redbox frame as failed even if Maestro exited 0.
+1. **Locate the failing test** in the `spec`-reporter output (the failing `it` and its error/stack).
+2. **Open that test's screenshot** in `automation_test/screenshots/` to see the actual screen at the end of the test.
+3. **Check the WebdriverIO/Appium log** for the failing command (selector, timeout) and the device `logcat`.
+4. **Fix, re-run, re-inspect.** Treat any run with a redbox/ANR in the screenshot as failed even if WebdriverIO exited 0.
 
 ### Failure patterns & fixes (observed in this repo)
 
-| Symptom in frames / log | Root cause | Fix |
-|-------------------------|-----------|-----|
-| "isn't responding" ANR mid-flow | `screenrecord` + parallel `screencap` sampler overloaded the emulator | Record only; extract frames from the video afterward |
-| ANR immediately after `launchApp` | Cold start raced Metro's first bundle rebuild | Pre-warm: `am force-stop` + launcher intent + ~12s before `maestro test` |
-| `Element not found` on a lower field | `tapOn` does not auto-scroll; field off-screen / behind keyboard | `scrollUntilVisible` before each field tap and assertion |
+| Symptom in screenshot / log | Root cause | Fix |
+|-----------------------------|-----------|-----|
+| `element not found` on a lower field | UiAutomator2 does not auto-scroll; the field is off-screen / behind the keyboard | `scrollIntoView(testId)` (via `scrollToTestId`) before tapping the field; `hideKeyboardIfVisible()` after typing |
+| Stale screen between tests | Previous test left app state behind | `launchAppFresh()` (terminate + activate) in `beforeEach` |
+| Visual diff fails on the top rows only | Android status bar (clock/battery) drifted | Status bar is cropped by `cropTopRows`; if a different emulator changed its height, add an entry to `STATUS_BAR_PX_BY_SHOT` |
+| Session never starts | `uiautomator2` driver missing, or device offline | `appium driver install uiautomator2`; ensure `adb devices` shows an online device |
 
-### Reliability checklist for a clean recorded run
+### Reliability checklist for a clean run
 
-- Jest + `tsc` green first (don't record broken code).
-- Pre-warm the app so `launchApp` is fast.
-- `scrollUntilVisible` before lower fields/asserts; `hideKeyboard` after typing.
-- One capture mechanism (`screenrecord`); frames come from ffmpeg, not a live loop.
-- Each screen's recording is attached to its tracker issue with the result summary.
-
-> Note on `ffmpeg`: it may not appear on a restricted `which` PATH but is still runnable at `/usr/bin/ffmpeg`.
+- Jest + both `tsc` projects green first (don't run E2E on broken code).
+- Device/emulator online (`adb devices`) and the app installed (`npx expo run:android`).
+- `launchAppFresh()` in `beforeEach` for deterministic state.
+- `scrollIntoView` before lower fields/asserts; `hideKeyboardIfVisible` after typing.
+- One screenshot per test → one baseline; review the diff PNG before any `-u`.
+- Each flow's screenshot is attached to its tracker issue with the result summary.
 
 ---
 
 ## Conclusion
 
-Harness engineering for React Native is not just a testing practice—it's an **enabling technology for AI-assisted development**. By providing structured, automated verification with device recordings, this harness allows agentic AI systems to safely generate, test, and refine mobile application code.
+Harness engineering for React Native is not just a testing practice—it's an **enabling technology for AI-assisted development**. By providing structured, automated verification with per-test screenshots and pixel-level baselines, this harness allows agentic AI systems to safely generate, test, and refine mobile application code.
 
 The combination of:
-- **Jest** (fast unit feedback)
-- **ADB** (real device proof)
-- **Maestro** (complete flow validation)
-- **Orchestration** (parallel, efficient execution)
+- **Jest** (fast unit/UI/snapshot feedback)
+- **Appium + WebdriverIO** (real-device flow validation via a page-object model)
+- **Per-test screenshot capture** (one stable image per test)
+- **Visual regression (jest-image-snapshot)** (pixel proof the E2E asserts can't see)
+- **Orchestration** (a clean drive → diff handoff)
 
-...creates a harness that agentic systems can trust and iterate from confidently.
+...creates a harness that agentic systems can trust and iterate from confidently. A green log alone is never enough: the screenshot is read **and** diffed against a baseline, so visual regressions still fail the Jest gate.

@@ -16,7 +16,7 @@
     {
       "id": 3,
       "prompt": "Refactor theme toggle component and ensure tests are complete.",
-      "expected_output": "Uses Red-Green-Refactor flow, keeps behavior stable with unit/UI tests, updates snapshots only when intentional, asks before Maestro, starts adb screenrecord first, and saves the pull under .maestro/recordings/.",
+      "expected_output": "Uses Red-Green-Refactor flow, keeps behavior stable with unit/UI tests, updates snapshots only when intentional, asks before running the Appium E2E suite, and captures per-test screenshots under automation_test/screenshots/ for the visual-regression layer.",
       "files": []
     }
   ]
