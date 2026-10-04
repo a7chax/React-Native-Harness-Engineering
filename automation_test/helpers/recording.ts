@@ -10,11 +10,16 @@ export interface RecordingLabel {
   passed: boolean;
 }
 
-/** A tap performed during the test, in device pixels, timed from video start. */
+/**
+ * A touch performed during the test, in device pixels, timed from video start.
+ * With `to`, it is a swipe that drags from (x, y) to `to` over `durationMs`.
+ */
 export interface RecordedTap {
   atMs: number;
   x: number;
   y: number;
+  to?: { x: number; y: number };
+  durationMs?: number;
 }
 
 // Height of the caption band added above the device screen, in source pixels.
@@ -60,24 +65,30 @@ function circlePath(r: number): string {
 /**
  * A "show taps"-style marker: a translucent orange dot with a solid ring that pops
  * in, then grows and fades out. Android's own Show taps setting does not draw
- * Appium's injected touches, so they are drawn here instead.
+ * Appium's injected touches, so they are drawn here instead. A swipe marker
+ * follows the finger from start to end before fading.
  */
 function tapEvent(tap: RecordedTap, width: number): string {
   const radius = Math.round(width * 0.045);
   const x = Math.round(tap.x);
   const y = Math.round(tap.y) + BAND_HEIGHT;
+  const moveMs = tap.to ? (tap.durationMs ?? 0) : 0;
+  const endMs = moveMs + TAP_MARKER_MS;
+  const position = tap.to
+    ? `\\move(${x},${y},${Math.round(tap.to.x)},${Math.round(tap.to.y) + BAND_HEIGHT},0,${moveMs})`
+    : `\\pos(${x},${y})`;
   const tags = [
     "\\an5",
-    `\\pos(${x},${y})`,
+    position,
     "\\bord8",
     "\\1c&H2C9CFF&\\1a&H90&",
     "\\3c&H2C9CFF&\\3a&H00&",
     "\\fscx70\\fscy70",
     "\\t(0,120,\\fscx100\\fscy100)",
-    `\\t(350,${TAP_MARKER_MS},\\fscx150\\fscy150\\alpha&HFF&)`,
+    `\\t(${moveMs + 350},${endMs},\\fscx150\\fscy150\\alpha&HFF&)`,
     "\\p1",
   ].join("");
-  return `Dialogue: 1,${assTime(tap.atMs)},${assTime(tap.atMs + TAP_MARKER_MS)},Tap,,0,0,0,,{${tags}}${circlePath(radius)}{\\p0}`;
+  return `Dialogue: 1,${assTime(tap.atMs)},${assTime(tap.atMs + endMs)},Tap,,0,0,0,,{${tags}}${circlePath(radius)}{\\p0}`;
 }
 
 /** Read the video's WxH from ffmpeg's stream info (ffprobe isn't bundled). */
@@ -127,7 +138,8 @@ function buildCaption(
 /**
  * Turn a raw Appium screen recording into a readable clip: constant 30fps in
  * real time (screenrecord only emits frames when the screen changes), a
- * caption band naming the feature, test and result, a marker on every tap,
+ * caption band naming the feature, test and result, a marker on every tap
+ * and swipe,
  * and a held final frame.
  *
  * Returns false (leaving the raw file in place) when ffmpeg is unavailable or

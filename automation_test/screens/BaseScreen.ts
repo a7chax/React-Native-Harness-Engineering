@@ -16,6 +16,12 @@ export abstract class BaseScreen {
     return this.root.isDisplayed();
   }
 
+  /** Whether the element is on screen right now (no waiting). */
+  async isShown(testId: string): Promise<boolean> {
+    const element = $(byTestId(testId));
+    return (await element.isExisting()) && (await element.isDisplayed());
+  }
+
   protected el(testId: string): ChainablePromiseElement {
     return $(byTestId(testId));
   }

@@ -15,6 +15,12 @@ export const VALID_REGISTRATION = {
   confirmPassword: "password1",
 };
 
+/** Values the Home screen seeds into MMKV (see lib/storage/demoData.ts). */
+export const STORED = {
+  encrypted: { count: 10, userId: "usr_10293847", cardLast4: "4242" },
+  plain: { count: 10, theme: "dark", currency: "IDR", appVersion: "1.0.0" },
+};
+
 export const TITLES = {
   login: "Welcome back",
   forgot: "Reset password",

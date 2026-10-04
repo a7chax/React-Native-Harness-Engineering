@@ -34,6 +34,31 @@ export async function setField(selector: string, value: string): Promise<void> {
 }
 
 /**
+ * Drag a finger vertically across the middle of the screen, like a user
+ * scrolling. "up" moves the content up (reveals what is below); "down" moves
+ * it back. Uses W3C pointer actions so the recording shows a real swipe.
+ */
+export async function swipe(direction: "up" | "down", distance = 0.5): Promise<void> {
+  const { width, height } = await driver.getWindowSize();
+  const x = Math.round(width / 2);
+  const top = Math.round(height * (0.5 - distance / 2));
+  const bottom = Math.round(height * (0.5 + distance / 2));
+  const [startY, endY] = direction === "up" ? [bottom, top] : [top, bottom];
+
+  await driver
+    .action("pointer", { parameters: { pointerType: "touch" } })
+    .move({ x, y: startY })
+    .down()
+    .pause(100)
+    .move({ x, y: endY, duration: 600 })
+    .pause(100)
+    .up()
+    .perform();
+  // Let the scroll momentum settle before asserting on positions.
+  await driver.pause(800);
+}
+
+/**
  * Scroll an element identified by testID into view.
  * - Android: resolving the UiScrollable selector triggers the scroll. Guarded
  *   because the element may already be on-screen (or non-scrollable container).

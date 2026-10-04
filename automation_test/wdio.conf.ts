@@ -51,6 +51,31 @@ function screenshotName(parent: string, title: string): string {
 // Per-feature counter so videos sort in execution order within each folder.
 const testIndexByFeature = new Map<string, number>();
 
+/**
+ * Read a single-finger drag out of W3C pointer actions: where the finger goes
+ * down, where it is released, and how long the drag takes. Returns null for
+ * anything else (key actions, multi-touch, taps without movement).
+ */
+function swipeFromActions(sources: unknown): Omit<RecordedTap, "atMs"> | null {
+  if (!Array.isArray(sources) || sources.length !== 1) return null;
+  const actions = (sources[0] as { type?: string; actions?: unknown }).actions;
+  if (!Array.isArray(actions)) return null;
+
+  let pos: { x: number; y: number } | null = null;
+  let start: { x: number; y: number } | null = null;
+  let durationMs = 0;
+  for (const a of actions as { type: string; x?: number; y?: number; duration?: number }[]) {
+    if (a.type === "pointerMove" && a.x !== undefined && a.y !== undefined) {
+      pos = { x: a.x, y: a.y };
+      if (start) durationMs += a.duration ?? 0;
+    } else if (a.type === "pointerDown") {
+      start = pos;
+    }
+  }
+  if (!start || !pos || (start.x === pos.x && start.y === pos.y)) return null;
+  return { ...start, to: pos, durationMs };
+}
+
 // Taps in the current test's recording, drawn onto the video afterwards.
 let recordingStartedAt = 0;
 let recordedTaps: RecordedTap[] = [];
@@ -117,20 +142,26 @@ export const config: WebdriverIO.Config = {
     }
   },
 
-  /** While recording, note where and when each element tap lands. */
+  /** While recording, note where and when each tap and swipe lands. */
   beforeCommand: async function (commandName, args) {
-    if (!recordingStartedAt || commandName !== "elementClick") return;
+    if (!recordingStartedAt) return;
     try {
-      const rect = await driver.getElementRect(args[0] as string);
-      recordedTaps.push({
-        atMs: Date.now() - recordingStartedAt,
-        x: rect.x + rect.width / 2,
-        y: rect.y + rect.height / 2,
-      });
+      if (commandName === "elementClick") {
+        const rect = await driver.getElementRect(args[0] as string);
+        recordedTaps.push({
+          atMs: Date.now() - recordingStartedAt,
+          x: rect.x + rect.width / 2,
+          y: rect.y + rect.height / 2,
+        });
+      } else if (commandName === "performActions") {
+        const swipe = swipeFromActions(args[0]);
+        if (swipe) recordedTaps.push({ atMs: Date.now() - recordingStartedAt, ...swipe });
+      }
     } catch {
       // A missing marker must never fail the test.
     }
   },
+
 
   /**
    * Capture one screenshot per test (pass or fail) into SCREENSHOT_DIR, named

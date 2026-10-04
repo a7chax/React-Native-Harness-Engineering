@@ -34,6 +34,10 @@ class ForgotPasswordScreen extends BaseScreen {
     return success.isDisplayed();
   }
 
+  async successText(): Promise<string> {
+    return this.textOf("forgot-success");
+  }
+
   async backToLogin(): Promise<void> {
     const link = this.el("forgot-to-login");
     await link.waitForDisplayed({ timeout: 15000 });
