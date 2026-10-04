@@ -40,6 +40,8 @@ app-example
 
 # Appium per-test screenshots (regenerated each run; baselines stay tracked)
 automation_test/screenshots/
+# Opt-in per-test screen recordings (npm run test:appium:record)
+automation_test/recordings/
 
 # jest-image-snapshot diff output (regenerated on failure; baselines stay tracked)
 **/__image_snapshots__/__diff_output__/
