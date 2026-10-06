@@ -1,2 +1,4 @@
 [tools]
 java = "21"
+# WebdriverIO 9 (undici 6) fails to reach Appium on Node 26; use the LTS line.
+node = "22"
