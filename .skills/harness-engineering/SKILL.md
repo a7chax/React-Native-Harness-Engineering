@@ -1,236 +1,221 @@
 ---
 name: harness-engineering
 description: >
-  Full React Native testing-harness workflow — not just TDD guardrails. Write failing
-  tests first and complete unit, UI, and snapshot coverage; then run the device harness:
-  run the Appium + WebdriverIO E2E suite, capture a per-test screenshot, read it to verify
-  on-screen behavior, and diff it against a committed baseline.
-  Use this skill whenever the user asks to implement or fix app behavior, components,
-  hooks, navigation flows, or test coverage in React Native/Expo projects.
-  When user says "test", automatically runs all unit tests, UI tests, snapshot tests,
-  then (after asking) runs the Appium E2E suite which captures one screenshot per test,
-  then reads those screenshots to verify on-screen behavior and runs the Layer 6
-  visual-regression diff against committed baselines.
-tags: [react-native, expo, tdd, unit-test, ui-test, snapshot, appium, webdriverio, e2e, screenshot, visual-regression, auto-test]
+  End-to-end development workflow for this React Native / Expo app and its
+  testing harness: test-first changes with unit, UI and snapshot tests in Jest,
+  then Appium + WebdriverIO E2E specs (positive, negative and scroll cases) run
+  on an Android emulator, with per-test screenshots, visual-regression diffs and
+  labelled per-test videos that show every tap and swipe. Use this skill
+  whenever the user wants to build or fix a feature, screen, form, navigation
+  flow or component; add, complete or fix tests; run "the tests" or "the
+  harness"; record a test video or prove/show that something works on the
+  device; add scrolling or gesture tests; or update E2E coverage or screenshot
+  baselines — even if they only say "test it", "make sure it works" or
+  "give me proof".
+tags: [react-native, expo, tdd, jest, appium, webdriverio, e2e, emulator, screenshot, visual-regression, video, recording]
 ---
 
-# React Native Harness Engineering Skill
+# React Native Harness Engineering
 
-Use this workflow for feature work and bug fixes in React Native/Expo codebases.
+This repo ships a layered test harness. A change is done when it is covered
+at every layer it touches **and** you have seen it work on a device. Each
+layer catches something the others miss:
 
-## Core Principle
+| Layer | What it catches | Where |
+|---|---|---|
+| 1. Unit (Jest) | wrong logic: validators, helpers, storage | `lib/**/__tests__`, `components/**/__tests__` |
+| 2. UI (React Testing Library) | wrong behaviour on press/type/render | `app/__tests__`, `components/**/__tests__` |
+| 3. Snapshot | unintended structural UI changes | `__snapshots__/*.snap` |
+| 4. E2E (Appium + WebdriverIO) | broken real-device flows, navigation, native bits | `automation_test/specs/*.e2e.ts` |
+| 5. Per-test screenshot | what the screen looked like at the end of each test | `automation_test/screenshots/` (git-ignored) |
+| 6. Visual regression | pixel drift (spacing, colour, layout) | `__tests__/visual/__image_snapshots__/appium-*.png` |
+| Video proof | the whole interaction, with taps and swipes drawn on | `automation_test/recordings/<feature>/` (git-ignored) |
 
-Run **Red -> Green -> Refactor** for every behavior change:
+`HARNESS_GUIDE.md` is the long-form reference for layers 1–6. Device setup,
+environment requirements and known Appium quirks are in
+`references/device-run.md`; read it before the first device run of a session
+or whenever a device run misbehaves.
 
-1. **Red**: write a failing test that reproduces the requirement/bug.
-2. **Green**: implement the minimum code to pass.
-3. **Refactor**: clean code while keeping tests green.
+## The development loop
 
-If no failing test was created first, treat implementation as incomplete.
+Work through these in order. Skipping ahead (writing code before a failing
+test, or claiming success from a green log without looking at the screen) is
+how regressions slip in.
 
-## Mandatory Test Surfaces
+1. **Pin down acceptance criteria.** List the user-visible behaviours,
+   including the unhappy paths (empty input, malformed input, going back).
+   Each behaviour should map to at least one test.
+2. **Red.** Write failing Jest tests first: a unit test for new logic, a UI
+   test for new interaction. Run just those tests and confirm they fail for
+   the right reason (`npx jest path/to/test --watchAll=false`).
+3. **Green.** Implement the minimum production change that makes them pass.
+4. **Refactor** with the tests green, then run the whole Jest suite
+   (`npx jest --ci --watchAll=false`) to catch regressions elsewhere. Update
+   `.snap` files only after reading the diff and confirming the change was
+   intended.
+5. **E2E.** Add or extend the Appium spec for the feature (see "Writing E2E
+   tests"). Every new testID the spec needs goes into the component first.
+6. **Device run.** Ask the user before starting it: it drives a real
+   emulator for several minutes. Then run with recording on (see "Device
+   run").
+7. **Look at the evidence.** Check screenshots and videos (see "Reviewing
+   the evidence"). A passing test whose video shows the wrong screen, an
+   error dialog or a system popup is not a pass.
+8. **Visual regression.** Run Layer 6 and handle diffs (see below).
+9. **Commit** in logical pieces with conventional-commit messages. Push or
+   open a PR only when the user asks.
 
-For each feature/bug change, cover all relevant layers:
+When a layer genuinely does not apply (e.g. a pure refactor of a validator
+has no E2E surface), say so explicitly in the summary instead of silently
+skipping it.
 
-1. **Unit test**
-   - Pure logic, helpers, hooks, state transforms, formatters, validators.
-   - Assert exact expected behavior and edge cases.
-2. **UI test**
-   - Component/screen behavior through user interactions (press, input, visibility, navigation intent).
-   - Use testing-library patterns over implementation details.
-3. **Snapshot update**
-   - Update snapshot only when UI change is intentional.
-   - Never blindly accept snapshots; confirm the visual/structural delta is expected.
-4. **Visual regression (when screenshots exist)**
-   - For changes that affect rendered pixels (layout, typography, color
-     tokens, icons, spacing), diff Appium per-test screenshots against
-     committed PNG baselines under
-     `__tests__/visual/__image_snapshots__/`.
-   - Same update discipline as snapshots: only `-u` after reviewing
-     the `*-diff.png` and confirming the visual delta is intentional.
+## Writing E2E tests
 
-When a layer is not applicable, explicitly state why.
+Structure:
 
-## Execution Workflow
+- `automation_test/screens/*Screen.ts`: page objects. They own selectors
+  and actions (`login()`, `submit()`, `scrollDown()`), extend `BaseScreen`,
+  and find elements by testID through `byTestId()`.
+- `automation_test/specs/<feature>.e2e.ts`: one `describe` per feature, a
+  `beforeEach` that calls `launchAppFresh()` and navigates to the screen, and
+  plain-English `it(...)` titles. The title becomes the screenshot,
+  baseline and video file name, so keep titles stable and descriptive.
+- `automation_test/data/testData.ts`: valid inputs, expected messages and
+  seeded values. Tests import expectations from here instead of hard-coding
+  strings.
 
-1. Clarify acceptance criteria and impacted files.
-2. Create/extend failing tests first (unit/UI/snapshot as applicable).
-3. Run the targeted failing tests to confirm **Red**.
-4. Implement minimal production change.
-5. Re-run targeted tests for **Green**.
-6. Run broader related tests to detect regressions.
-7. If snapshots changed, review diff and update intentionally.
-8. Summarize what changed and what is now covered by tests.
+Coverage expectations for each feature. Group them under `// Positive cases`
+and `// Negative cases` comments so the balance is visible:
 
-## Test Quality Bar
+- **Positive:** the happy path end to end; every navigation entry and exit
+  (links, back button, logout); tolerated input variations (e.g. an email
+  with surrounding spaces); errors disappearing once the input is fixed;
+  data the screen should display.
+- **Negative:** empty submit; each malformed field on its own (assert the
+  *other* fields show no error, via `isShown(testId) === false`); rules at
+  their boundary (e.g. a password without a number).
+- **Scroll:** if a screen is taller than the viewport, test the scroll
+  itself. Use `swipe("up" | "down")` from `helpers/gestures.ts`. It is a real
+  W3C finger drag, so it shows up in the video. Assert that the scroll
+  happened by comparing an element's `getLocation().y` before and after, and
+  that content near the bottom became reachable. Before tapping a control
+  that starts partly off-screen, scroll it into view the way a user would.
 
-- Prefer behavior-focused assertions.
-- Include at least one negative or edge-path assertion when relevant.
-- Avoid over-mocking core behavior unless unavoidable.
-- Keep tests deterministic and readable.
+Patterns that keep specs reliable:
 
-## Comprehensive Test Execution
+- Wait for elements (`waitForDisplayed`) instead of using fixed sleeps.
+  Fixed pauses are only for letting a scroll settle.
+- Assert that something is *absent* with `isShown()`, which does not wait.
+  Waiting for an absent element just burns the timeout.
+- Fill fields with `setField()`, which focuses, clears, types and hides the
+  keyboard so the keyboard does not cover the next element.
+- Appium's UiAutomator2 source flattens React Native views. Text that looks
+  nested inside a `View` in the code appears as **following siblings** of
+  that view, so use
+  `//*[@resource-id="<id>"]/following-sibling::android.widget.TextView[n]`
+  rather than a child lookup.
+- Android clips element bounds to the screen. A partly visible element still
+  reports `isDisplayed() === true` and a shorter height, so "is it fully
+  visible?" needs a size or position comparison, not `isDisplayed()`.
 
-When the user asks to "test" or run tests, execute ALL test surfaces in this order:
+## Device run
 
-1. **Run all unit tests**: `npx jest --watchAll=false`
-2. **Run all UI tests**: `npx jest --testNamePattern=".*" --watchAll=false`
-3. **Run snapshot tests**: All snapshots are automatically tested within jest runs
-4. **Confirm a device + installed app**: `adb devices` shows one `device`,
-   and the app is installed/reachable (`expo run:android` if needed).
-5. **Ask before running the Appium suite**: the device E2E run is gated —
-   confirm with the user before starting it (see Completion Gate below).
-6. **Run the Appium E2E suite**: `npm run test:appium`
-   (= `wdio run automation_test/wdio.conf.ts`). Appium is auto-started by
-   `@wdio/appium-service`. The `afterTest` hook saves one screenshot per
-   test (pass or fail) into `automation_test/screenshots/`, named by the
-   full test title.
-7. **Read the captured screenshots**: open the PNGs in
-   `automation_test/screenshots/` and verify on-screen behavior — the
-   correct screen rendered, validation errors / success states show with
-   their exact text, and there is **no redbox or ANR dialog**.
-8. **Run visual regression (Layer 6)**:
-   `npx jest __tests__/visual/appium-screenshots-test.ts`
-   to diff each Appium screenshot against committed baselines under
-   `__tests__/visual/__image_snapshots__/`. On an **intentional** visual
-   change, review the `*-diff.png` and update with `-u`; otherwise treat a
-   diff as a regression and fix production code.
+Prerequisites (details and a bootstrap script are in
+`references/device-run.md`):
 
-This is the **default behavior** when the user says "test", except that the
-device E2E suite (steps 5–8) is only run after the user confirms.
+- Node 22 (pinned in `mise.toml`). Under Node 26, WebdriverIO cannot create
+  an Appium session (`UND_ERR_INVALID_ARG`).
+- An emulator or device in `adb devices`, Metro running on 8081 with
+  `adb reverse tcp:8081 tcp:8081`, and the debug app installed. To set all of
+  this up in one go, run
+  `bash .skills/harness-engineering/scripts/boot-device.sh`.
 
-## Completion Gate (Appium + per-test screenshots)
-
-When all unit/UI/snapshot tests pass, **ask before running the device suite**.
-The Appium E2E run is gated — do not start it without user confirmation.
-
-**Execution order (after the user confirms):**
-1. Run all tests (unit, UI, snapshot).
-2. If tests pass, confirm a device and installed app are available.
-3. Run the Appium suite: `npm run test:appium`.
-4. The `afterTest` hook saves one screenshot per test into
-   `automation_test/screenshots/` (git-ignored; override the dir via
-   `APPIUM_SHOT_DIR`).
-5. Read the captured screenshots to verify on-screen behavior.
-6. Run the Layer 6 visual-regression diff and review any failures.
-
-### Prerequisites (required)
-
-Before `npm run test:appium`:
-
-1. **Device attached**: `adb devices` shows one `device` (Android device
-   or emulator; the suite uses the UiAutomator2 driver).
-2. **App installed and reachable** on that device — build/install with
-   `expo run:android` if it is not already present.
-
-You do not start or stop any recording. Appium is launched automatically by
-`@wdio/appium-service` when the suite runs, and the `afterTest` hook handles
-all capture.
-
-### Run the Appium suite
-
-```bash
-# Default screenshot dir: automation_test/screenshots/
-npm run test:appium
-
-# Override the screenshot output dir if needed:
-APPIUM_SHOT_DIR=/tmp/appium-shots npm run test:appium
-```
-
-The suite is Appium + WebdriverIO (Mocha, TypeScript via tsx), configured in
-`automation_test/wdio.conf.ts`. It currently covers 4 flows — **login**,
-**home**, **forgot-password**, and **register** — with page objects in
-`automation_test/screens/`, specs in `automation_test/specs/*.e2e.ts`, and
-shared helpers in `automation_test/helpers/`.
-
-After the run, confirm `automation_test/screenshots/` contains one PNG per
-test (named by the full test title) and mention the path in the completion
-summary. If a screenshot is missing, the `afterTest` hook logs the capture
-failure but never fails the run — note the logged error; do not claim a test
-was screenshotted when it was not.
-
-## Screenshot Inspection (read the captured PNGs)
-
-A green WebdriverIO/Mocha log is **not** sufficient on its own — confirm the
-pixels. After the suite runs, read the per-test PNGs in
-`automation_test/screenshots/` to verify what actually happened on screen
-(errors shown, success states, navigation, no redbox/ANR). This is a
-**required verification step**, not optional.
-
-### Read the screenshots
-
-- There is exactly **one screenshot per test**, saved by the `afterTest`
-  hook (pass or fail) and named by the test's full title, so you can map a
-  PNG straight back to the spec that produced it.
-- For each screenshot confirm the expected UI: validation errors with their
-  exact text, success/empty states, the correct screen, and **no redbox or
-  ANR dialog**.
-- If a screenshot shows an ANR ("isn't responding") or a redbox, the run is
-  **not** trustworthy even if the spec reported a pass — fix reliability
-  (below), re-run, and re-inspect.
-- Summarize findings by referencing specific tests (e.g. "the
-  `register form shows all errors` screenshot shows all four validation
-  errors").
-
-### Reliability (so the run is clean enough to inspect)
-
-- Ensure the app is built and installed (`expo run:android`) before the
-  suite so the first spec does not hit a cold-start ANR while Metro rebuilds
-  the JS bundle.
-- WebdriverIO taps do **not** auto-scroll. On scrollable screens use the
-  `scrollIntoView` helper in `automation_test/helpers/gestures.ts` to bring
-  an off-screen field into view before interacting, and assert a field's
-  inline error right after typing while it is on screen.
-
-## Visual Regression (jest-image-snapshot)
-
-The Appium `afterTest` hook writes one screenshot per test to
-`automation_test/screenshots/`. Run the visual regression suite to lock
-visual behavior against committed baselines. This is **Layer 6** in
-`HARNESS_GUIDE.md` — pixel-level regression detection that closes the gap
-WebdriverIO assertions can't (specs assert on accessibility id / text, not
-pixels).
-
-### Run the suite
+Run it:
 
 ```bash
-npx jest __tests__/visual/appium-screenshots-test.ts
+npm run test:appium:record                       # whole suite, with videos
+RECORD_VIDEO=1 npx wdio run automation_test/wdio.conf.ts \
+  --spec automation_test/specs/home.e2e.ts       # one feature while iterating
+npm run test:appium                              # no videos (faster)
 ```
 
-- `__tests__/visual/appium-screenshots-test.ts` reads each PNG in
-  `automation_test/screenshots/`, crops the Android status bar with
-  `cropTopRows` (from `lib/visual/frameUtils.ts`), and diffs it against the
-  committed baseline
-  `__tests__/visual/__image_snapshots__/appium-<test-title>.png`.
-  **Commit the baselines** — they are the regression contract.
-- On a **fresh checkout** (no Appium screenshots captured yet) the suite
-  **skips** so CI stays green until a device run has produced screenshots.
-- On subsequent runs the matcher diffs each new screenshot against its
-  baseline; failures write `*-diff.png` files to
-  `__tests__/visual/__image_snapshots__/__diff_output__/` (git-ignored).
-- The Android **status bar is cropped before diff** via `cropTopRows`
-  (default `ANDROID_STATUS_BAR_PX_DEFAULT`, 75 px). Without this, the
-  clock/battery/signal indicators would dominate every diff and the layer
-  would be unusable. Adjust the crop in
-  `__tests__/visual/appium-screenshots-test.ts` if a flow runs on a
-  non-Pixel emulator (taller bar, notch skin).
+The full suite takes about 10 minutes. Run it in the background and wait for
+the completion notification instead of polling. While iterating, run only the
+spec you are changing, then the full suite once at the end.
 
-### Updating baselines
+When a test fails, read the error in the WDIO log first, then look at that
+test's screenshot and video before changing code. Most failures are
+environmental (a system popup, a cold Metro bundle, a timing issue) rather
+than app bugs. `references/device-run.md` has a troubleshooting table.
 
-Same rule as the structural `.snap` files in Layer 3 — only `-u` after
-reviewing the diff PNG and confirming the visual change is intended:
+## Reviewing the evidence
+
+With `RECORD_VIDEO=1`, every test produces
+`automation_test/recordings/<feature>/<NN>-<test-title>.<passed|failed>.mp4`,
+post-processed (by `automation_test/helpers/recording.ts`) to include:
+
+- a caption band showing the feature, the test number and title, and
+  PASSED/FAILED;
+- an orange circle at every element tap, and a circle that follows the
+  finger for every swipe;
+- real-time playback and a 2-second hold on the final frame.
+
+Android's own "Show taps" setting does not draw Appium's injected touches.
+That is why the markers are drawn during post-processing.
+
+You cannot watch a video, so turn it into a frame strip and read that:
 
 ```bash
-npx jest __tests__/visual/appium-screenshots-test.ts -u
+bash .skills/harness-engineering/scripts/contact-sheet.sh \
+  automation_test/recordings/home/04-*.mp4 /tmp/strip.png 2
 ```
 
-If the diff is **not** intended, treat it as a regression and fix the
-production code, not the baseline.
+Then read the PNG. For each test, check:
 
-### Reporting visual failures
+- it starts on the expected screen and ends in the expected state (error
+  text, success message, new screen);
+- tap markers land on the control being tested, and the screen reacts right
+  after (a keyboard opens, an error appears, navigation happens);
+- for scroll tests, the content moves with the swipe marker;
+- there is no redbox, ANR dialog, keyboard onboarding popup or other system
+  overlay.
 
-When a visual diff fails:
-- Reference the failing test title (the screenshot/baseline key) so the
-  reviewer can correlate it to the spec that produced it.
-- Surface each `__diff_output__/*-diff.png` for the failing screenshots so
-  the reviewer can see *exactly* which pixels drifted.
+Screenshots in `automation_test/screenshots/` (one per test, the final state)
+are quicker to read when you only need the end state.
+
+Report what you saw per test ("`register/02` shows the name error clearing
+once 'John Doe' is typed"), not just the pass count. If a video or screenshot
+is missing, say so; the hooks never fail the run when capture fails.
+
+## Visual regression (Layer 6)
+
+```bash
+npx jest __tests__/visual/appium-screenshots-test.ts --ci --watchAll=false
+```
+
+The test diffs each screenshot (status bar cropped) against
+`__tests__/visual/__image_snapshots__/appium-<test-title>.png`.
+
+- A new test has no baseline yet, so `--ci` reports "New snapshot was not
+  written". Generate the baselines with `-u`, then look at every new PNG
+  before committing: each should be the correct final screen with no
+  overlays.
+- A diff on an existing baseline is a regression until proven otherwise.
+  Open `__diff_output__/*-diff.png`, decide whether the change was intended,
+  and only then update with `-u`. Otherwise fix the code.
+- Renaming a test title orphans its old baseline. Delete the stale PNG in
+  the same commit.
+
+## Finishing up
+
+Summarise for the user:
+
+1. What changed in the app and which tests cover it, grouped by layer.
+2. Test results with real numbers: Jest suites and tests, Appium tests and
+   duration, visual baselines.
+3. What the videos and screenshots showed, per feature, with file paths.
+4. Anything skipped or environmental (e.g. "the device run used Node 22",
+   "the stylus popup was disabled on the emulator").
+
+Recordings and screenshots are git-ignored and regenerated on every run.
+Commit source, specs, page objects, test data and reviewed baselines only.

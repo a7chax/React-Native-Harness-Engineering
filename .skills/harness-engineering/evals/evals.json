@@ -16,9 +16,20 @@
     {
       "id": 3,
       "prompt": "Refactor theme toggle component and ensure tests are complete.",
-      "expected_output": "Uses Red-Green-Refactor flow, keeps behavior stable with unit/UI tests, updates snapshots only when intentional, asks before running the Appium E2E suite, and captures per-test screenshots under automation_test/screenshots/ for the visual-regression layer.",
+      "expected_output": "Uses Red-Green-Refactor, keeps behaviour stable with unit/UI tests, updates snapshots only when intentional, asks before the device run, then runs the Appium suite and checks the per-test screenshots and visual-regression diff.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "add a 'show password' eye toggle to the login password field, and give me a video proving it works on the emulator",
+      "expected_output": "Failing UI test first, implements the toggle with a testID, adds positive (toggle reveals/hides) and negative E2E cases to login.e2e.ts via the LoginScreen page object, confirms Node 22/device/Metro, asks before the device run, runs with RECORD_VIDEO=1, turns the new video into a frame strip with contact-sheet.sh and reports what the frames show, adds a reviewed baseline for the new test, commits.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "the home screen got longer after adding the MMKV list. make sure the e2e tests actually scroll to the bottom like a user and check the logout button still works, include positive cases",
+      "expected_output": "Uses swipe() from helpers/gestures.ts (W3C drag, visible in video) rather than only UiScrollable; asserts scroll via element position change and that the bottom content became reachable; scrolls before tapping logout; groups positive/negative cases; reviews the swipe marker in the recording; handles flattened-XPath and clipped-bounds quirks if they appear.",
       "files": []
     }
   ]
 }
-
