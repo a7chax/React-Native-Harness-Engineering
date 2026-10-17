@@ -51,8 +51,67 @@ A tab-less Expo Router stack (`app/_layout.tsx`):
 | `/register` | `app/register.tsx` | **Register** — name/email/password/confirm validation, → Home |
 | `/forgot-password` | `app/forgot-password.tsx` | **Forgot Password** — email validation, mock "reset link sent" |
 | `/home` | `app/home.tsx` | **Home** — post-login landing, logout → Login |
+| `/player` | `app/player.tsx` | **Now Playing** — bundled track with synced lyrics, Play/Pause, `m:ss` time and credits; no login needed |
 
 Shared building blocks: `lib/authValidation.ts` (validators), `components/ui/{FormTextInput,PrimaryButton,AuthScreen}.tsx`, and `components/RegisterForm/`.
+
+**Now Playing deep link.** `reactnativeuitest://player?track=dcye&at=41000&paused=1` opens the player. Its parameters, validated by `lib/player/params.ts`:
+
+| Parameter | Value | Default and fallback |
+|-----------|-------|----------------------|
+| `track` | catalog id: `dcye`, `letting-go` or `tone` | the first track (`dcye`) when missing or unknown |
+| `at` | start position in ms | 0 when missing, not a plain number, negative or past the track's end |
+| `paused` | `1` stays paused | anything else starts playing at once |
+| `stall` | ms to block the JS thread once playback reaches `at` (capped at 10000) | development builds only; ignored in other builds |
+
+A link that arrives while the screen is open applies again, even one identical to the current link. The screen is `components/player/NowPlaying.tsx`, with the lyrics in `components/player/LyricsView.tsx`; its highlight and auto-scroll run on the UI thread, so they keep moving while `stall` blocks the JS thread.
+
+---
+
+## Music catalog
+
+The Now Playing screen (`reactnativeuitest://player?track=<id>`) plays three bundled tracks:
+
+| id | Title | Artist | Licence | Lyrics |
+|----|-------|--------|---------|--------|
+| `dcye` | Don't Close Your Eyes | Josh Woodward | CC BY 4.0 | LRCLIB 10481837 |
+| `letting-go` | I'm Letting Go | Josh Woodward | CC BY 4.0 | LRCLIB 10481859, chorus repeat from the official lyrics |
+| `tone` | Test Tone (440 Hz) | Generated | none | none |
+
+**Audio.** The M4A files in `assets/music/` are committed (about 6.6 MiB). To rebuild them:
+
+```bash
+node scripts/build-music-assets.mjs
+```
+
+The script downloads the two MP3s from joshwoodward.com (so it needs network access), transcodes them with the repo's `ffmpeg-static` to AAC-LC 128 kbps M4A, and generates the 20 s 440 Hz tone. It writes `assets/music/{dcye,letting-go,tone}.m4a` and prints each file's size, duration and sha256. With the same `ffmpeg-static` binary, a rebuild gives byte-identical files. M4A is used because Android seeks exactly in it, unlike VBR MP3, so lyrics don't drift after a seek.
+
+**Catalog.** `lib/music/catalog.ts` holds one entry per track:
+
+- title and artist;
+- `durationMs`, the M4A's real length, which clamps the playback position;
+- the `require()`d audio;
+- the LRC text, kept as a template string in `lib/music/lyrics/<id>.ts` so it is in the bundle synchronously;
+- the licence record: `license`, `licenseUrl`, `attribution`, `changes`, `sourceUrl`, `pageUrl` (the song's web page, null for the tone), `lyricsSource`;
+- `lrcCheckedByEar`, which stays `false` until someone has listened on a device and confirmed the lyric timing (always `false` for a track without lyrics).
+
+`lyricsFor(track)` parses a track's LRC once and then returns the cached result. `lib/music/__tests__/catalog.test.ts` checks each entry against the files on disk. If a rebuild changes a file's length, update `durationMs`, or that test fails.
+
+**CC BY 4.0 obligations.** Both songs and their lyrics are by Josh Woodward under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Section 3(a) of the licence obliges the app to:
+
+- name the work and its creator: the title and the artist;
+- say that it is under CC BY 4.0, with the licence's URI (or its full text);
+- link to the original material, where reasonably practicable;
+- say what was changed, here "transcoded to AAC".
+
+The Now Playing screen shows `creditLine(track)` for every track, for example `Music: "Don't Close Your Eyes" by Josh Woodward, CC BY 4.0, transcoded to AAC`. That covers the title, the artist, the licence name and the change note. Tapping the credit opens the **credits panel** (`components/player/CreditsPanel.tsx`), an overlay on the same screen that shows:
+
+- the full `attribution`;
+- the licence address, `licenseUrl` (`credits-license-link`);
+- the song page, `pageUrl` (`credits-page-link`);
+- a Close button (`credits-close`) that returns to the lyrics.
+
+Tapping either address opens it in the browser. The generated tone has no licence, so its panel shows only its attribution, with no links. Together, the credit and the panel cover the four points above. Do not remove the credit, the panel's links or the "transcoded to AAC" note. A new CC BY track needs the same fields, including `pageUrl`, and a `changes` note for every edit made to the original.
 
 ---
 

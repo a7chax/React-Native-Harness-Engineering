@@ -1,0 +1,3828 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NowPlaying matches the snapshot of dcye paused at 0:41 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "#fff",
+      },
+      {
+        "flex": 1,
+      },
+    ]
+  }
+  testID="player-screen"
+>
+  <RNCSafeAreaView
+    edges={
+      {
+        "bottom": "additive",
+        "left": "off",
+        "right": "off",
+        "top": "off",
+      }
+    }
+    style={
+      {
+        "flex": 1,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "gap": 2,
+          "paddingBottom": 8,
+          "paddingHorizontal": 24,
+          "paddingTop": 16,
+        }
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#11181C",
+            },
+            undefined,
+            undefined,
+            undefined,
+            {
+              "fontSize": 20,
+              "fontWeight": "bold",
+            },
+            undefined,
+            undefined,
+          ]
+        }
+        testID="player-title"
+      >
+        Don't Close Your Eyes
+      </Text>
+      <Text
+        style={
+          [
+            {
+              "color": "#11181C",
+            },
+            {
+              "fontSize": 16,
+              "lineHeight": 24,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+              "opacity": 0.7,
+            },
+          ]
+        }
+        testID="player-artist"
+      >
+        Josh Woodward
+      </Text>
+    </View>
+    <View
+      style={
+        {
+          "flex": 1,
+        }
+      }
+    >
+      <RCTScrollView
+        collapsable={false}
+        contentContainerStyle={
+          [
+            {
+              "paddingHorizontal": 24,
+            },
+            {
+              "paddingVertical": 0,
+            },
+          ]
+        }
+        forwardedRef={[Function]}
+        jestAnimatedProps={
+          {
+            "value": {},
+          }
+        }
+        jestAnimatedStyle={
+          {
+            "value": {},
+          }
+        }
+        jestInlineStyle={
+          {
+            "flex": 1,
+          }
+        }
+        onLayout={[Function]}
+        onMomentumScrollBegin={[Function]}
+        onMomentumScrollEnd={[Function]}
+        onScroll={[Function]}
+        onScrollBeginDrag={[Function]}
+        onScrollEndDrag={[Function]}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        style={
+          [
+            {
+              "flex": 1,
+            },
+          ]
+        }
+        testID="lyrics-view"
+      >
+        <View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-0"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Cold hands, sore feet
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-1"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              You've been walking for an hour on abandoned streets
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-2"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Weak knees, and fresh scars
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-3"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              It's a struggle when you're losing track of who you are
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-4"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              The words you stole won't save your soul
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-5"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              They can only buy you time
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": true,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-6"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#0a7ea4",
+                    "opacity": 1,
+                    "transform": [
+                      {
+                        "scale": 1.04,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#0a7ea4",
+                    "opacity": 1,
+                    "transform": [
+                      {
+                        "scale": 1.04,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Light a candle, or curse the dark
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-7"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              It's all the same to me
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-8"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Start a fire, or drown the spark
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-9"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              And shake away the heat
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-10"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Tell the truth or live a lie
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-11"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Just don't close your eyes
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-12"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Let down, and so spent
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-13"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              You've been holding up the world with your good intent
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-14"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Help out, like you should
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-15"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              It's a burden that you never really understood
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-16"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              But Caroline, I'm doing fine
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-17"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              It's the others who are dying
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-18"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Light a candle, or curse the dark
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-19"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              It's all the same to me
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-20"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Start a fire, or drown the spark
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-21"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              And shake away the heat
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-22"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Tell the truth or live a lie
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-23"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Just don't close your eyes
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-24"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              And you're breaking
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-25"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              But you're faking nothing's ever wrong
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-26"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              And concealing what you're feeling
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-27"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Always standing strong
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-28"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              But you don't need
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-29"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              To act like you don't bleed
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-30"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              When you come falling down
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-31"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Cuz there is no healing when you're not feeling
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-32"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Anything at all
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-33"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Light a candle, or curse the dark
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-34"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              It's all the same to me
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-35"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Start a fire, or drown the spark
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-36"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              And shake away the heat
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-37"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Tell the truth or live a lie
+            </Text>
+          </View>
+          <View
+            accessibilityHint="Jumps to this line"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onLayout={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            testID="lyrics-line-38"
+          >
+            <Text
+              collapsable={false}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                ]
+              }
+              style={
+                [
+                  {
+                    "fontSize": 20,
+                    "fontWeight": "600",
+                    "lineHeight": 28,
+                    "paddingVertical": 8,
+                    "textAlign": "center",
+                  },
+                  {
+                    "color": "#11181C",
+                    "opacity": 0.45,
+                    "transform": [
+                      {
+                        "scale": 1,
+                      },
+                    ],
+                  },
+                ]
+              }
+            >
+              Just don't close your eyes
+            </Text>
+          </View>
+        </View>
+      </RCTScrollView>
+    </View>
+    <View
+      style={
+        {
+          "paddingBottom": 16,
+          "paddingHorizontal": 24,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "justifyContent": "space-between",
+          }
+        }
+      >
+        <Text
+          style={
+            [
+              {
+                "color": "#11181C",
+              },
+              {
+                "fontSize": 16,
+                "lineHeight": 24,
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              {
+                "fontSize": 20,
+                "fontVariant": [
+                  "tabular-nums",
+                ],
+                "marginTop": 12,
+              },
+            ]
+          }
+          testID="player-time"
+        >
+          0:41
+        </Text>
+        <View
+          style={
+            {
+              "width": 140,
+            }
+          }
+        >
+          <View
+            accessibilityLabel="player-toggle"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": false,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "alignItems": "center",
+                "backgroundColor": "#0a7ea4",
+                "borderRadius": 6,
+                "height": 48,
+                "justifyContent": "center",
+                "marginTop": 12,
+                "opacity": 1,
+              }
+            }
+            testID="player-toggle"
+          >
+            <Text
+              style={
+                {
+                  "color": "#fff",
+                  "fontSize": 16,
+                  "fontWeight": "600",
+                }
+              }
+            >
+              Play
+            </Text>
+          </View>
+        </View>
+      </View>
+      <View
+        accessibilityHint="Shows the licence and the song page"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          {
+            "marginTop": 12,
+          }
+        }
+        testID="player-credit"
+      >
+        <Text
+          style={
+            [
+              {
+                "color": "#11181C",
+              },
+              {
+                "fontSize": 16,
+                "lineHeight": 24,
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              {
+                "fontSize": 13,
+                "lineHeight": 18,
+                "opacity": 0.7,
+              },
+            ]
+          }
+        >
+          Music: "Don't Close Your Eyes" by Josh Woodward, CC BY 4.0, transcoded to AAC
+        </Text>
+      </View>
+    </View>
+  </RNCSafeAreaView>
+</View>
+`;
