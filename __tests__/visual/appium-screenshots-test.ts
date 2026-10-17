@@ -32,6 +32,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { ANDROID_STATUS_BAR_PX_DEFAULT, cropTopRows } from '../../lib/visual/frameUtils';
+import { isSkippedShot } from '../../lib/visual/skippedShots';
 
 const SHOTS_ROOT = path.resolve(__dirname, '../../automation_test/screenshots');
 
@@ -76,6 +77,12 @@ if (shots.length === 0) {
     for (const file of shots) {
       const slug = file.replace(/\.png$/i, '');
       const statusBarPx = statusBarPxFor(slug);
+
+      if (isSkippedShot(slug)) {
+        // Moving UI: asserted by its Appium spec, not pixel-diffed.
+        it.skip(`screenshot ${file} is not pixel-diffed (moving UI)`, () => {});
+        continue;
+      }
 
       it(`screenshot ${file} matches baseline (status bar ${statusBarPx}px cropped)`, () => {
         const raw = fs.readFileSync(path.join(SHOTS_ROOT, file));

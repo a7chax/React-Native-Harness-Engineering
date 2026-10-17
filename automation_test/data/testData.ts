@@ -21,6 +21,31 @@ export const STORED = {
   plain: { count: 10, theme: "dark", currency: "IDR", appVersion: "1.0.0" },
 };
 
+/**
+ * The Now Playing screen's bundled tracks and the dcye lyric lines its spec
+ * refers to (see lib/music/catalog.ts and lib/music/lyrics/dcye.ts).
+ */
+export const PLAYER = {
+  dcye: {
+    id: "dcye",
+    title: "Don't Close Your Eyes",
+    artist: "Josh Woodward",
+    credit: 'Music: "Don\'t Close Your Eyes" by Josh Woodward, CC BY 4.0, transcoded to AAC',
+    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+    pageUrl: "https://www.joshwoodward.com/song/DontCloseYourEyes",
+    lastLine: 38,
+    lines: {
+      2: "Weak knees, and fresh scars",
+      5: "They can only buy you time",
+      6: "Light a candle, or curse the dark",
+      7: "It's all the same to me",
+      9: "And shake away the heat",
+    },
+  },
+  lettingGo: { id: "letting-go", title: "I'm Letting Go" },
+  tone: { id: "tone", noLyrics: "No lyrics for this track" },
+};
+
 export const TITLES = {
   login: "Welcome back",
   forgot: "Reset password",
