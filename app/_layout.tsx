@@ -15,6 +15,7 @@ export default function RootLayout() {
         <Stack.Screen name="register" options={{ title: 'Create account' }} />
         <Stack.Screen name="forgot-password" options={{ title: 'Reset password' }} />
         <Stack.Screen name="home" options={{ headerShown: false }} />
+        <Stack.Screen name="player" options={{ title: 'Now Playing' }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
